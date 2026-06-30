@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Открытка</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="confetti-canvas"></canvas>
+
+  <div class="card" id="card">
+    <div class="card-inner" id="cardInner">
+      <div class="card-front">
+        <div class="sticker">🎉</div>
+        <h1 id="title">С Праздником!</h1>
+        <p class="subtitle" id="subtitle">Пусть этот день принесёт радость</p>
+        <button class="open-btn" id="openBtn">Открыть &#10095;</button>
+      </div>
+      <div class="card-back">
+        <h2 id="greeting">Дорогой друг!</h2>
+        <p class="message" id="message">
+          От всей души поздравляю тебя!<br>
+          Желаю счастья, здоровья, успехов<br>
+          и всего самого наилучшего!<br><br>
+          Пусть все мечты сбываются,<br>
+          а каждый день дарит улыбки!
+        </p>
+        <p class="signature" id="signature">С любовью</p>
+        <button class="config-btn" id="configBtn">⚙️ Настроить</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modal">
+    <div class="modal-content">
+      <h3>Настройка открытки</h3>
+      <label>Заголовок <input type="text" id="editTitle" value="С Праздником!"></label>
+      <label>Подзаголовок <input type="text" id="editSubtitle" value="Пусть этот день принесёт радость"></label>
+      <label>Обращение <input type="text" id="editGreeting" value="Дорогой друг!"></label>
+      <label>Текст
+        <textarea id="editMessage" rows="4">От всей души поздравляю тебя!
+Желаю счастья, здоровья, успехов
+и всего самого наилуччего!
+
+Пусть все мечты сбываются,
+а каждый день дарит улыбки!</textarea>
+      </label>
+      <label>Подпись <input type="text" id="editSignature" value="С любовью"></label>
+      <label>Эмодзи <input type="text" id="editSticker" value="🎉" maxlength="4"></label>
+      <div class="modal-actions">
+        <button class="btn-primary" id="saveBtn">Сохранить</button>
+        <button class="btn-secondary" id="closeBtn">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
