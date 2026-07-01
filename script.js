@@ -414,24 +414,57 @@ function showQrModal(slug) {
     }
   }
 
+  // Center icon
   const sticker = (currentPage && currentPage.sticker) || '🎁'
-  const iconSize = Math.floor(size * 0.24)
-  const iconX = (size - iconSize) / 2
-  const iconY = (size - iconSize) / 2
+  const iconMax = Math.floor(size * 0.26)
 
+  // Off-screen canvas to measure exact emoji bounds
+  const tmp = document.createElement('canvas')
+  tmp.width = iconMax * 2
+  tmp.height = iconMax * 2
+  const tCtx = tmp.getContext('2d')
+  tCtx.font = `${iconMax}px "Apple Color Emoji", "Segoe UI Emoji", sans-serif`
+  tCtx.textAlign = 'center'
+  tCtx.textBaseline = 'middle'
+  tCtx.fillText(sticker, tmp.width / 2, tmp.height / 2)
+
+  const data = tCtx.getImageData(0, 0, tmp.width, tmp.height)
+  const pix = data.data
+  let minX = tmp.width, minY = tmp.height, maxX = 0, maxY = 0
+  for (let y = 0; y < tmp.height; y++) {
+    for (let x = 0; x < tmp.width; x++) {
+      if (pix[(y * tmp.width + x) * 4 + 3] > 0) {
+        if (x < minX) minX = x
+        if (y < minY) minY = y
+        if (x > maxX) maxX = x
+        if (y > maxY) maxY = y
+      }
+    }
+  }
+
+  const eW = maxX - minX + 1
+  const eH = maxY - minY + 1
+  const maxDim = Math.max(eW, eH)
+  const drawSize = iconMax * 0.85
+  const scale = drawSize / maxDim
+  const drawW = eW * scale
+  const drawH = eH * scale
+  const drawX = (size - drawW) / 2
+  const drawY = (size - drawH) / 2
+
+  // White circle behind icon
+  const circleR = Math.max(drawW, drawH) / 2 + 6
   ctx.save()
   ctx.shadowColor = 'rgba(0,0,0,0.1)'
   ctx.shadowBlur = 8
-  ctx.fillStyle = '#ffffff'
   ctx.beginPath()
-  ctx.arc(size / 2, size / 2, iconSize / 2 + 6, 0, Math.PI * 2)
+  ctx.arc(size / 2, size / 2, circleR, 0, Math.PI * 2)
+  ctx.fillStyle = '#ffffff'
   ctx.fill()
   ctx.restore()
 
-  ctx.font = `${Math.floor(iconSize * 0.6)}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  ctx.fillText(sticker, size / 2, size / 2 + 1)
+  // Draw emoji from off-screen canvas
+  ctx.drawImage(tmp, minX, minY, eW, eH, drawX, drawY, drawW, drawH)
 
   modal.classList.remove('hidden')
 }
