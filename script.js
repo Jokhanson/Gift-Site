@@ -161,7 +161,10 @@ async function renderViewPage(slug) {
   // Increment (fire-and-forget)
   sb.from('pages').update({ views: viewCount + 1 }).eq('slug', slug).then()
 
-  document.getElementById('cardInner').classList.remove('open')
+  // Reset hero — hide content, put hero back
+  document.getElementById('pageContent').classList.add('hidden')
+  document.getElementById('hero').classList.remove('hidden')
+  window.scrollTo({ top: 0, behavior: 'instant' })
 
   renderVideo(page.video_url)
   renderPhotoGrid(page)
@@ -215,7 +218,7 @@ function renderNotFound() {
   document.getElementById('viewGreeting').textContent = ''
   document.getElementById('viewMessage').textContent = ''
   document.getElementById('viewSignature').textContent = ''
-  document.getElementById('cardInner').classList.remove('open')
+  document.getElementById('pageContent').classList.add('hidden')
   document.getElementById('videoContainer').classList.add('hidden')
   document.getElementById('qrBtn').onclick = null
   document.getElementById('editBtn').onclick = null
@@ -228,6 +231,7 @@ function renderNotFound() {
 // ==================== VIDEO ====================
 function renderVideo(url) {
   const container = document.getElementById('videoContainer')
+  const frame = document.getElementById('videoFrame')
   if (!url) {
     container.classList.add('hidden')
     return
@@ -235,15 +239,13 @@ function renderVideo(url) {
 
   const embedUrl = getVideoEmbedUrl(url)
   if (embedUrl) {
-    let iframe = container.querySelector('iframe')
-    if (!iframe) {
-      iframe = document.createElement('iframe')
-      iframe.setAttribute('allowfullscreen', '')
-      iframe.setAttribute('loading', 'lazy')
-      iframe.title = 'Video'
-      container.appendChild(iframe)
-    }
+    frame.innerHTML = ''
+    const iframe = document.createElement('iframe')
+    iframe.setAttribute('allowfullscreen', '')
+    iframe.setAttribute('loading', 'lazy')
+    iframe.title = 'Video'
     iframe.src = embedUrl
+    frame.appendChild(iframe)
     container.classList.remove('hidden')
   } else {
     container.classList.add('hidden')
@@ -644,16 +646,14 @@ function startConfetti() {
 // Card
 document.getElementById('openBtn').addEventListener('click', (e) => {
   e.stopPropagation()
-  document.getElementById('cardInner').classList.add('open')
+  const content = document.getElementById('pageContent')
+  const hero = document.getElementById('hero')
+  content.classList.remove('hidden')
+  hero.classList.add('hidden')
   startConfetti()
-})
-
-document.getElementById('card').addEventListener('click', () => {
-  const inner = document.getElementById('cardInner')
-  if (!inner.classList.contains('open')) {
-    inner.classList.add('open')
-    startConfetti()
-  }
+  setTimeout(() => {
+    content.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, 200)
 })
 
 // Create / Edit form

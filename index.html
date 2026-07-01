@@ -7,7 +7,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❤️</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -48,44 +48,58 @@
     </div>
 
     <div id="viewPage" class="page-section hidden">
-      <div class="card" id="card">
-        <div class="card-inner" id="cardInner">
-          <div class="card-front">
-            <div class="sticker" id="viewSticker">🎉</div>
-            <h1 id="viewTitle">С Праздником!</h1>
-            <p class="subtitle" id="viewSubtitle">Пусть этот день принесёт радость</p>
-            <button class="open-btn" id="openBtn">Открыть &#10095;</button>
-          </div>
-          <div class="card-back">
-            <h2 id="viewGreeting">Дорогая!</h2>
-            <p class="message" id="viewMessage">Поздравляю!</p>
-            <p class="signature" id="viewSignature">С любовью</p>
-          </div>
-        </div>
+      <!-- Hero area -->
+      <div class="hero" id="hero">
+        <div class="hero-sticker" id="viewSticker">🎉</div>
+        <h1 class="hero-title" id="viewTitle">С Праздником!</h1>
+        <p class="hero-subtitle" id="viewSubtitle">Пусть этот день принесёт радость</p>
+        <button class="hero-btn" id="openBtn">✨ Открыть поздравление</button>
       </div>
 
-      <div id="videoContainer" class="video-container hidden"></div>
+      <!-- Content revealed after clicking open -->
+      <div class="page-content hidden" id="pageContent">
+        <div class="section-divider"><span>💌</span></div>
 
-      <section class="photo-section">
-        <h3 class="photo-section-title">Фото воспоминания</h3>
-        <div id="photoGrid" class="photo-grid"></div>
-        <div id="photoActions" class="photo-actions">
-          <label class="photo-upload-btn" id="photoUploadLabel">
-            <input type="file" accept="image/*" multiple id="photoInput" hidden>
-            + Добавить фото
-          </label>
-          <span class="photo-count" id="photoCount">0 / 5</span>
+        <!-- Letter -->
+        <section class="letter">
+          <h2 class="letter-greeting" id="viewGreeting">Дорогая!</h2>
+          <div class="letter-body" id="viewMessage">Поздравляю!</div>
+          <p class="letter-signature" id="viewSignature">С любовью</p>
+        </section>
+
+        <div class="section-divider"><span>🎬</span></div>
+
+        <!-- Video -->
+        <div id="videoContainer" class="video-wrapper hidden">
+          <p class="section-label">Видео</p>
+          <div class="video-frame" id="videoFrame"></div>
         </div>
-      </section>
 
-      <div class="page-actions">
-        <span id="viewCounter" class="view-counter hidden">👁️ <span id="viewCountNum">0</span></span>
-        <button id="qrBtn" class="action-btn">Показать QR-код</button>
-        <div class="more-menu">
-          <button id="moreBtn" class="action-btn more-btn">⋮</button>
-          <div id="moreDropdown" class="more-dropdown hidden">
-            <button id="editBtn" class="dropdown-item">✏️ Редактировать</button>
-            <button id="deleteBtn" class="dropdown-item dropdown-danger">🗑️ Удалить</button>
+        <div class="section-divider"><span>📸</span></div>
+
+        <!-- Photos -->
+        <section class="photo-section">
+          <h3 class="section-label">Фото воспоминания</h3>
+          <div id="photoGrid" class="photo-grid"></div>
+          <div id="photoActions" class="photo-actions">
+            <label class="photo-upload-btn" id="photoUploadLabel">
+              <input type="file" accept="image/*" multiple id="photoInput" hidden>
+              + Добавить фото
+            </label>
+            <span class="photo-count" id="photoCount">0 / 5</span>
+          </div>
+        </section>
+
+        <!-- Actions -->
+        <div class="page-actions">
+          <span id="viewCounter" class="view-counter hidden">👁️ <span id="viewCountNum">0</span></span>
+          <button id="qrBtn" class="action-btn">Показать QR</button>
+          <div class="more-menu">
+            <button id="moreBtn" class="action-btn more-btn">⋮</button>
+            <div id="moreDropdown" class="more-dropdown hidden">
+              <button id="editBtn" class="dropdown-item">✏️ Редактировать</button>
+              <button id="deleteBtn" class="dropdown-item dropdown-danger">🗑️ Удалить</button>
+            </div>
           </div>
         </div>
       </div>
@@ -95,7 +109,7 @@
   <div id="qrModal" class="modal hidden">
     <div class="modal-content qr-modal-content">
       <div class="modal-header">
-        <h3>QR-код страницы</h3>
+        <h3>QR-код</h3>
         <button id="closeQrBtn" class="icon-btn">✕</button>
       </div>
       <div id="qrContainer" class="qr-container"></div>
