@@ -1,0 +1,42 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main, experimental]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare output folder
+        run: |
+          mkdir -p _site
+          if [ "${{ github.ref_name }}" = "experimental" ]; then
+            mkdir -p _site/experimental
+            cp -r . _site/experimental/
+            rm -rf _site/experimental/_site
+            # Remove the workflow file from the deployed copy
+            rm -rf _site/experimental/.github
+          else
+            cp -r . _site/
+            rm -rf _site/.github
+          fi
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
