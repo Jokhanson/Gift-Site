@@ -154,6 +154,13 @@ async function renderViewPage(slug) {
   msgEl.innerHTML = (page.message || '').replace(/\n/g, '<br>')
   document.getElementById('viewSignature').textContent = page.signature || ''
 
+  // View counter
+  const viewCount = page.views || 0
+  document.getElementById('viewCountNum').textContent = viewCount
+  document.getElementById('viewCounter').classList.remove('hidden')
+  // Increment (fire-and-forget)
+  sb.from('pages').update({ views: viewCount + 1 }).eq('slug', slug).then()
+
   document.getElementById('cardInner').classList.remove('open')
 
   renderVideo(page.video_url)
@@ -213,6 +220,7 @@ function renderNotFound() {
   document.getElementById('qrBtn').onclick = null
   document.getElementById('editBtn').onclick = null
   document.getElementById('deleteBtn').onclick = null
+  document.getElementById('viewCounter').classList.add('hidden')
   document.getElementById('photoActions').classList.add('hidden')
   document.getElementById('photoGrid').innerHTML = ''
 }
@@ -467,6 +475,12 @@ function showQrModal(slug) {
   ctx.drawImage(tmp, minX, minY, eW, eH, drawX, drawY, drawW, drawH)
 
   modal.classList.remove('hidden')
+  document.getElementById('downloadQrBtn').onclick = () => {
+    const link = document.createElement('a')
+    link.download = `qr-${slug}.png`
+    link.href = canvas.toDataURL('image/png')
+    link.click()
+  }
 }
 
 // ==================== SIDEBAR ====================

@@ -16,11 +16,15 @@ CREATE TABLE IF NOT EXISTS pages (
   signature TEXT DEFAULT '',
   sticker TEXT DEFAULT '🎉',
   video_url TEXT DEFAULT '',
-  photo_urls TEXT[] DEFAULT '{}'
+  photo_urls TEXT[] DEFAULT '{}',
+  views INTEGER DEFAULT 0
 );
 
 -- 2. RLS (Row Level Security)
 ALTER TABLE pages ENABLE ROW LEVEL SECURITY;
+
+-- Добавить колонку views для существующих таблиц
+ALTER TABLE pages ADD COLUMN IF NOT EXISTS views INTEGER DEFAULT 0;
 
 CREATE POLICY "Allow public read" ON pages
   FOR SELECT USING (true);

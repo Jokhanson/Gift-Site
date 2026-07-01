@@ -10,7 +10,6 @@ body {
   align-items: center;
   min-height: 100vh;
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   overflow-x: hidden;
 }
 
@@ -730,6 +729,27 @@ h1 {
 .qr-hint {
   color: #999;
   font-size: 13px;
+}
+
+.view-counter {
+  color: rgba(255,255,255,0.7);
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ===== Animated background ===== */
+body {
+  background: linear-gradient(135deg, #667eea, #764ba2, #e0407a, #667eea);
+  background-size: 400% 400%;
+  animation: bgShift 20s ease infinite;
+}
+
+@keyframes bgShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 /* ===== Page Sections ===== */
