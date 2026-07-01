@@ -260,6 +260,9 @@ function getVideoEmbedUrl(url) {
 }
 
 // ==================== PHOTOS ====================
+let lightboxPhotos = []
+let lightboxIndex = 0
+
 function renderPhotoGrid(page) {
   const grid = document.getElementById('photoGrid')
   const actions = document.getElementById('photoActions')
@@ -268,9 +271,17 @@ function renderPhotoGrid(page) {
   const photos = page.photo_urls || []
 
   if (photos.length > 0) {
-    grid.innerHTML = photos.map(url =>
-      `<div class="photo-item"><img src="${url}" alt="Фото" loading="lazy"></div>`
+    grid.innerHTML = photos.map((url, i) =>
+      `<div class="photo-item" data-index="${i}"><img src="${url}" alt="Фото" loading="lazy"></div>`
     ).join('')
+
+    grid.querySelectorAll('.photo-item').forEach(el => {
+      el.addEventListener('click', () => {
+        lightboxPhotos = photos
+        lightboxIndex = parseInt(el.dataset.index)
+        openLightbox()
+      })
+    })
   } else {
     grid.innerHTML = '<p class="photo-empty">Пока нет фотографий</p>'
   }
@@ -278,6 +289,48 @@ function renderPhotoGrid(page) {
   count.textContent = `${photos.length} / 5`
   actions.classList.toggle('hidden', photos.length >= 5)
 }
+
+function openLightbox() {
+  const img = document.getElementById('lightboxImg')
+  img.src = lightboxPhotos[lightboxIndex]
+  document.getElementById('lightbox').classList.remove('hidden')
+  updateLightboxNav()
+}
+
+function updateLightboxNav() {
+  document.getElementById('lightboxPrev').classList.toggle('hidden', lightboxIndex <= 0)
+  document.getElementById('lightboxNext').classList.toggle('hidden', lightboxIndex >= lightboxPhotos.length - 1)
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.add('hidden')
+  document.getElementById('lightboxImg').src = ''
+  lightboxPhotos = []
+}
+
+document.getElementById('lightboxClose').addEventListener('click', closeLightbox)
+
+document.getElementById('lightbox').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeLightbox()
+})
+
+document.getElementById('lightboxPrev').addEventListener('click', (e) => {
+  e.stopPropagation()
+  if (lightboxIndex > 0) {
+    lightboxIndex--
+    document.getElementById('lightboxImg').src = lightboxPhotos[lightboxIndex]
+    updateLightboxNav()
+  }
+})
+
+document.getElementById('lightboxNext').addEventListener('click', (e) => {
+  e.stopPropagation()
+  if (lightboxIndex < lightboxPhotos.length - 1) {
+    lightboxIndex++
+    document.getElementById('lightboxImg').src = lightboxPhotos[lightboxIndex]
+    updateLightboxNav()
+  }
+})
 
 // ==================== QR ====================
 function showQrModal(slug) {
@@ -605,6 +658,14 @@ document.addEventListener('keydown', (e) => {
     hideSidebar()
     document.getElementById('qrModal').classList.add('hidden')
     document.getElementById('deleteModal').classList.add('hidden')
+    closeLightbox()
+  }
+  if (!document.getElementById('lightbox').classList.contains('hidden')) {
+    if (e.key === 'ArrowLeft') {
+      document.getElementById('lightboxPrev').click()
+    } else if (e.key === 'ArrowRight') {
+      document.getElementById('lightboxNext').click()
+    }
   }
 })
 
