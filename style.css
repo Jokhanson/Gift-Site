@@ -731,6 +731,16 @@ h1 {
   font-size: 13px;
 }
 
+.qr-modal-content .action-btn {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border: none;
+  color: white;
+}
+
+.qr-modal-content .action-btn:hover {
+  background: linear-gradient(135deg, #5a6fd6, #6a4192);
+}
+
 .view-counter {
   color: rgba(255,255,255,0.7);
   font-size: 13px;
