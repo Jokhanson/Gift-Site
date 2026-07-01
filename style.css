@@ -446,16 +446,49 @@ h1 {
   border-color: rgba(255,255,255,0.5);
 }
 
-.delete-btn {
-  border-color: rgba(255,100,100,0.3);
-  color: rgba(255,150,150,0.8);
+/* ===== More Menu (dropdown) ===== */
+.more-menu {
+  position: relative;
 }
 
-.delete-btn:hover {
-  background: rgba(255,80,80,0.2);
-  border-color: rgba(255,100,100,0.6);
-  color: rgba(255,180,180,1);
+.more-btn {
+  font-size: 20px;
+  letter-spacing: 2px;
+  padding: 12px 16px;
 }
+
+.more-dropdown {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 8px);
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+  overflow: hidden;
+  min-width: 180px;
+  z-index: 10;
+}
+
+.more-dropdown.hidden { display: none; }
+
+.dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: none;
+  font-size: 14px;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  color: #333;
+  transition: background 0.15s;
+}
+
+.dropdown-item:hover { background: #f5f5f5; }
+
+.dropdown-danger { color: #e74c3c; }
+.dropdown-danger:hover { background: #fef0ef; }
 
 /* ===== Create Page ===== */
 #createPage {

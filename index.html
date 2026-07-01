@@ -28,17 +28,17 @@
 
     <div id="createPage" class="page-section hidden">
       <div class="create-container">
-        <h1>Создать открытку</h1>
+        <h1 id="formTitle">Создать открытку</h1>
         <form id="createForm" class="create-form">
           <label>Повод <input type="text" id="formOccasion" placeholder="8 марта, День рождения..." required></label>
-          <label>Заголовок <input type="text" id="formTitle" value="С Праздником!" required></label>
+          <label>Заголовок <input type="text" id="formTitleField" value="С Праздником!" required></label>
           <label>Подзаголовок <input type="text" id="formSubtitle" value="Пусть этот день принесёт радость"></label>
           <label>Обращение <input type="text" id="formGreeting" value="Дорогая!" required></label>
           <label>Текст поздравления <textarea id="formMessage" rows="5" required>От всей души поздравляю тебя!</textarea></label>
           <label>Подпись <input type="text" id="formSignature" value="С любовью"></label>
           <label>Стикер <input type="text" id="formSticker" value="🎉" maxlength="4"></label>
           <label>Ссылка на видео (YouTube / VK) <input type="url" id="formVideoUrl" placeholder="https://youtube.com/watch?v=..."></label>
-          <button type="submit" class="submit-btn">Создать открытку</button>
+          <button type="submit" class="submit-btn" id="formSubmitBtn">Создать открытку</button>
         </form>
       </div>
     </div>
@@ -76,7 +76,13 @@
 
       <div class="page-actions">
         <button id="qrBtn" class="action-btn">Показать QR-код</button>
-        <button id="deleteBtn" class="action-btn delete-btn hidden">Удалить</button>
+        <div class="more-menu">
+          <button id="moreBtn" class="action-btn more-btn">⋮</button>
+          <div id="moreDropdown" class="more-dropdown hidden">
+            <button id="editBtn" class="dropdown-item">✏️ Редактировать</button>
+            <button id="deleteBtn" class="dropdown-item dropdown-danger">🗑️ Удалить</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>

@@ -11,6 +11,7 @@ const PHOTO_BUCKET = 'gift-photos'
 // ==================== STATE ====================
 let currentPage = null
 let qrInstance = null
+let editSlug = null
 
 // ==================== API ====================
 async function getPageBySlug(slug) {
@@ -116,8 +117,11 @@ async function uploadPhoto(slug, file) {
 function router() {
   const hash = location.hash.slice(1) || '/'
   hideSidebar()
+  closeDropdown()
   if (hash.startsWith('/page/')) {
     renderViewPage(hash.slice(6))
+  } else if (hash.startsWith('/edit/')) {
+    renderEditPage(hash.slice(6))
   } else if (hash === '/create') {
     renderCreatePage()
   } else if (hash === '/') {
@@ -163,11 +167,43 @@ async function renderViewPage(slug) {
   renderPhotoGrid(page)
 
   document.getElementById('qrBtn').onclick = () => showQrModal(slug)
-  document.getElementById('deleteBtn').classList.remove('hidden')
-  document.getElementById('deleteBtn').onclick = () => showDeleteModal(slug)
+  document.getElementById('editBtn').onclick = () => {
+    closeDropdown()
+    navigate(`/edit/${slug}`)
+  }
+  document.getElementById('deleteBtn').onclick = () => {
+    closeDropdown()
+    showDeleteModal(slug)
+  }
 }
 
 function renderCreatePage() {
+  editSlug = null
+  document.getElementById('createForm').reset()
+  document.getElementById('formTitle').textContent = 'Создать открытку'
+  document.getElementById('formSubmitBtn').textContent = 'Создать открытку'
+  showSection('createPage')
+}
+
+async function renderEditPage(slug) {
+  showLoading()
+  const page = await getPageBySlug(slug)
+  if (!page) {
+    renderNotFound()
+    return
+  }
+
+  editSlug = slug
+  document.getElementById('formTitle').textContent = 'Редактировать открытку'
+  document.getElementById('formSubmitBtn').textContent = 'Сохранить изменения'
+  document.getElementById('formOccasion').value = page.occasion || ''
+  document.getElementById('formTitleField').value = page.title || ''
+  document.getElementById('formSubtitle').value = page.subtitle || ''
+  document.getElementById('formGreeting').value = page.greeting || ''
+  document.getElementById('formMessage').value = page.message || ''
+  document.getElementById('formSignature').value = page.signature || ''
+  document.getElementById('formSticker').value = page.sticker || '🎉'
+  document.getElementById('formVideoUrl').value = page.video_url || ''
   showSection('createPage')
 }
 
@@ -182,7 +218,8 @@ function renderNotFound() {
   document.getElementById('cardInner').classList.remove('open')
   document.getElementById('videoContainer').classList.add('hidden')
   document.getElementById('qrBtn').onclick = null
-  document.getElementById('deleteBtn').classList.add('hidden')
+  document.getElementById('editBtn').onclick = null
+  document.getElementById('deleteBtn').onclick = null
   document.getElementById('photoActions').classList.add('hidden')
   document.getElementById('photoGrid').innerHTML = ''
 }
@@ -527,30 +564,35 @@ document.getElementById('card').addEventListener('click', () => {
   }
 })
 
-// Create form
+// Create / Edit form
 document.getElementById('createForm').addEventListener('submit', async (e) => {
   e.preventDefault()
 
-  const slug = generateSlug()
   const pageData = {
-    slug,
     occasion: document.getElementById('formOccasion').value,
-    title: document.getElementById('formTitle').value,
+    title: document.getElementById('formTitleField').value,
     subtitle: document.getElementById('formSubtitle').value,
     greeting: document.getElementById('formGreeting').value,
     message: document.getElementById('formMessage').value,
     signature: document.getElementById('formSignature').value,
     sticker: document.getElementById('formSticker').value || '🎉',
-    video_url: document.getElementById('formVideoUrl').value,
-    photo_urls: []
+    video_url: document.getElementById('formVideoUrl').value
   }
 
   try {
-    await insertPage(pageData)
-    navigate(`/page/${slug}`)
+    if (editSlug) {
+      await supabase.from('pages').update(pageData).eq('slug', editSlug)
+      navigate(`/page/${editSlug}`)
+    } else {
+      const slug = generateSlug()
+      pageData.slug = slug
+      pageData.photo_urls = []
+      await insertPage(pageData)
+      navigate(`/page/${slug}`)
+    }
   } catch (err) {
     console.error(err)
-    alert('Ошибка при создании открытки. Проверьте подключение к Supabase.')
+    alert('Ошибка при сохранении открытки. Проверьте подключение к Supabase.')
   }
 })
 
@@ -656,6 +698,7 @@ document.getElementById('deleteModal').addEventListener('click', (e) => {
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     hideSidebar()
+    closeDropdown()
     document.getElementById('qrModal').classList.add('hidden')
     document.getElementById('deleteModal').classList.add('hidden')
     closeLightbox()
@@ -668,6 +711,20 @@ document.addEventListener('keydown', (e) => {
     }
   }
 })
+
+// More menu dropdown
+function closeDropdown() {
+  document.getElementById('moreDropdown').classList.add('hidden')
+}
+
+document.getElementById('moreBtn').addEventListener('click', (e) => {
+  e.stopPropagation()
+  const dd = document.getElementById('moreDropdown')
+  dd.classList.toggle('hidden')
+})
+
+document.addEventListener('click', () => closeDropdown())
+document.getElementById('moreDropdown').addEventListener('click', (e) => e.stopPropagation())
 
 // Window resize
 window.addEventListener('resize', () => {
