@@ -238,33 +238,18 @@ function renderVideo(url) {
   }
 
   const embedUrl = getVideoEmbedUrl(url)
-  if (!embedUrl) {
-    container.classList.add('hidden')
-    return
-  }
-
-  container.classList.remove('hidden')
-  frame.innerHTML = ''
-
-  const wrapper = document.createElement('div')
-  wrapper.className = 'video-thumb-wrapper'
-
-  const playBtn = document.createElement('button')
-  playBtn.className = 'video-play-btn'
-  playBtn.setAttribute('aria-label', 'Смотреть видео')
-
-  wrapper.appendChild(playBtn)
-  frame.appendChild(wrapper)
-
-  wrapper.addEventListener('click', function loadVideo() {
+  if (embedUrl) {
+    frame.innerHTML = ''
     const iframe = document.createElement('iframe')
     iframe.setAttribute('allowfullscreen', '')
     iframe.setAttribute('loading', 'lazy')
     iframe.title = 'Video'
     iframe.src = embedUrl
-    frame.innerHTML = ''
     frame.appendChild(iframe)
-  })
+    container.classList.remove('hidden')
+  } else {
+    container.classList.add('hidden')
+  }
 }
 
 function parseTimeToSeconds(str) {
