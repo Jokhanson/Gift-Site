@@ -3,58 +3,97 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Открытка</title>
+  <title>Gift Site</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <canvas id="confetti-canvas"></canvas>
 
-  <div class="card" id="card">
-    <div class="card-inner" id="cardInner">
-      <div class="card-front">
-        <div class="sticker">🎉</div>
-        <h1 id="title">С Праздником!</h1>
-        <p class="subtitle" id="subtitle">Пусть этот день принесёт радость</p>
-        <button class="open-btn" id="openBtn">Открыть &#10095;</button>
+  <button id="menuBtn" class="menu-btn" aria-label="Меню">☰</button>
+
+  <div id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+      <h3>История поздравлений</h3>
+      <button id="closeSidebar" class="icon-btn">✕</button>
+    </div>
+    <div id="sidebarList" class="sidebar-list"></div>
+    <div class="sidebar-footer">
+      <button id="createNewBtn" class="create-new-btn">+ Новая открытка</button>
+    </div>
+  </div>
+  <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+  <div id="app" class="app">
+    <div id="loading" class="loading hidden">Загрузка...</div>
+
+    <div id="createPage" class="page-section hidden">
+      <div class="create-container">
+        <h1>Создать открытку</h1>
+        <form id="createForm" class="create-form">
+          <label>Повод <input type="text" id="formOccasion" placeholder="8 марта, День рождения..." required></label>
+          <label>Заголовок <input type="text" id="formTitle" value="С Праздником!" required></label>
+          <label>Подзаголовок <input type="text" id="formSubtitle" value="Пусть этот день принесёт радость"></label>
+          <label>Обращение <input type="text" id="formGreeting" value="Дорогая!" required></label>
+          <label>Текст поздравления <textarea id="formMessage" rows="5" required>От всей души поздравляю тебя!</textarea></label>
+          <label>Подпись <input type="text" id="formSignature" value="С любовью"></label>
+          <label>Стикер <input type="text" id="formSticker" value="🎉" maxlength="4"></label>
+          <label>Ссылка на видео (YouTube) <input type="url" id="formVideoUrl" placeholder="https://youtube.com/watch?v=..."></label>
+          <button type="submit" class="submit-btn">Создать открытку</button>
+        </form>
       </div>
-      <div class="card-back">
-        <h2 id="greeting">Дорогой друг!</h2>
-        <p class="message" id="message">
-          От всей души поздравляю тебя!<br>
-          Желаю счастья, здоровья, успехов<br>
-          и всего самого наилучшего!<br><br>
-          Пусть все мечты сбываются,<br>
-          а каждый день дарит улыбки!
-        </p>
-        <p class="signature" id="signature">С любовью</p>
-        <button class="config-btn" id="configBtn">⚙️ Настроить</button>
+    </div>
+
+    <div id="viewPage" class="page-section hidden">
+      <div class="card" id="card">
+        <div class="card-inner" id="cardInner">
+          <div class="card-front">
+            <div class="sticker" id="viewSticker">🎉</div>
+            <h1 id="viewTitle">С Праздником!</h1>
+            <p class="subtitle" id="viewSubtitle">Пусть этот день принесёт радость</p>
+            <button class="open-btn" id="openBtn">Открыть &#10095;</button>
+          </div>
+          <div class="card-back">
+            <h2 id="viewGreeting">Дорогая!</h2>
+            <p class="message" id="viewMessage">Поздравляю!</p>
+            <p class="signature" id="viewSignature">С любовью</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="videoContainer" class="video-container hidden"></div>
+
+      <section class="photo-section">
+        <h3 class="photo-section-title">Фото воспоминания</h3>
+        <div id="photoGrid" class="photo-grid"></div>
+        <div id="photoActions" class="photo-actions">
+          <label class="photo-upload-btn" id="photoUploadLabel">
+            <input type="file" accept="image/*" multiple id="photoInput" hidden>
+            + Добавить фото
+          </label>
+          <span class="photo-count" id="photoCount">0 / 5</span>
+        </div>
+      </section>
+
+      <div class="page-actions">
+        <button id="qrBtn" class="action-btn">Показать QR-код</button>
       </div>
     </div>
   </div>
 
-  <div class="modal" id="modal">
-    <div class="modal-content">
-      <h3>Настройка открытки</h3>
-      <label>Заголовок <input type="text" id="editTitle" value="С Праздником!"></label>
-      <label>Подзаголовок <input type="text" id="editSubtitle" value="Пусть этот день принесёт радость"></label>
-      <label>Обращение <input type="text" id="editGreeting" value="Дорогой друг!"></label>
-      <label>Текст
-        <textarea id="editMessage" rows="4">От всей души поздравляю тебя!
-Желаю счастья, здоровья, успехов
-и всего самого наилуччего!
-
-Пусть все мечты сбываются,
-а каждый день дарит улыбки!</textarea>
-      </label>
-      <label>Подпись <input type="text" id="editSignature" value="С любовью"></label>
-      <label>Эмодзи <input type="text" id="editSticker" value="🎉" maxlength="4"></label>
-      <div class="modal-actions">
-        <button class="btn-primary" id="saveBtn">Сохранить</button>
-        <button class="btn-secondary" id="closeBtn">Закрыть</button>
+  <div id="qrModal" class="modal hidden">
+    <div class="modal-content qr-modal-content">
+      <div class="modal-header">
+        <h3>QR-код страницы</h3>
+        <button id="closeQrBtn" class="icon-btn">✕</button>
       </div>
+      <div id="qrContainer" class="qr-container"></div>
+      <p id="qrLink" class="qr-link"></p>
+      <p class="qr-hint">Отсканируйте, чтобы открыть страницу</p>
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

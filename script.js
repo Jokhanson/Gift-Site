@@ -1,66 +1,311 @@
-const card = document.getElementById('card');
-const cardInner = document.getElementById('cardInner');
-const openBtn = document.getElementById('openBtn');
-const configBtn = document.getElementById('configBtn');
-const modal = document.getElementById('modal');
-const saveBtn = document.getElementById('saveBtn');
-const closeBtn = document.getElementById('closeBtn');
+// ==================== CONFIG ====================
+// TODO: Замените на данные вашего Supabase проекта
+const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co'
+const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY'
 
-let confettiActive = false;
-let confettiPieces = [];
-let animationId = null;
+// ==================== SUPABASE ====================
+const { createClient } = supabase
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+const PHOTO_BUCKET = 'gift-photos'
 
-function openCard() {
-  cardInner.classList.add('open');
-  startConfetti();
-}
+// ==================== STATE ====================
+let currentPage = null
+let qrInstance = null
 
-openBtn.addEventListener('click', (e) => {
-  e.stopPropagation();
-  openCard();
-});
-
-card.addEventListener('click', () => {
-  if (!cardInner.classList.contains('open')) {
-    openCard();
+// ==================== API ====================
+async function getPageBySlug(slug) {
+  const { data, error } = await sb
+    .from('pages')
+    .select('*')
+    .eq('slug', slug)
+    .maybeSingle()
+  if (error) {
+    console.error('getPageBySlug error:', error)
+    return null
   }
-});
-
-configBtn.addEventListener('click', (e) => {
-  e.stopPropagation();
-  document.getElementById('editTitle').value = document.getElementById('title').textContent;
-  document.getElementById('editSubtitle').value = document.getElementById('subtitle').textContent;
-  document.getElementById('editGreeting').value = document.getElementById('greeting').textContent;
-  document.getElementById('editMessage').value = document.getElementById('message').innerText;
-  document.getElementById('editSignature').value = document.getElementById('signature').textContent;
-  document.getElementById('editSticker').value = document.querySelector('.sticker').textContent;
-  modal.classList.add('open');
-});
-
-function saveSettings() {
-  document.getElementById('title').textContent = document.getElementById('editTitle').value;
-  document.getElementById('subtitle').textContent = document.getElementById('editSubtitle').value;
-  document.getElementById('greeting').textContent = document.getElementById('editGreeting').value;
-  document.getElementById('message').innerHTML = document.getElementById('editMessage').value.replace(/\n/g, '<br>');
-  document.getElementById('signature').textContent = document.getElementById('editSignature').value;
-  document.querySelector('.sticker').textContent = document.getElementById('editSticker').value || '🎉';
-  modal.classList.remove('open');
+  return data
 }
 
-saveBtn.addEventListener('click', saveSettings);
+async function getAllPages() {
+  const { data, error } = await sb
+    .from('pages')
+    .select('*')
+    .order('created_at', { ascending: false })
+  if (error) {
+    console.error('getAllPages error:', error)
+    return []
+  }
+  return data
+}
 
-closeBtn.addEventListener('click', () => modal.classList.remove('open'));
+async function insertPage(pageData) {
+  const { data, error } = await sb
+    .from('pages')
+    .insert(pageData)
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
 
-modal.addEventListener('click', (e) => {
-  if (e.target === modal) modal.classList.remove('open');
-});
+async function updatePage(slug, updates) {
+  const { error } = await sb.from('pages').update(updates).eq('slug', slug)
+  if (error) throw error
+}
 
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') modal.classList.remove('open');
-});
+// ==================== PHOTO UPLOAD ====================
+function compressImage(file, maxSize = 1200, quality = 0.7) {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => {
+      let width = img.width
+      let height = img.height
+      if (width > maxSize || height > maxSize) {
+        const ratio = Math.min(maxSize / width, maxSize / height)
+        width = Math.round(width * ratio)
+        height = Math.round(height * ratio)
+      }
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      const ctx = canvas.getContext('2d')
+      ctx.drawImage(img, 0, 0, width, height)
+      canvas.toBlob((blob) => {
+        resolve(blob)
+      }, 'image/jpeg', quality)
+    }
+    img.onerror = () => reject(new Error('Failed to load image'))
+    img.src = URL.createObjectURL(file)
+  })
+}
+
+async function uploadPhoto(slug, file) {
+  const blob = await compressImage(file)
+  const path = `${slug}/${Date.now()}.jpg`
+  const { error } = await sb.storage.from(PHOTO_BUCKET).upload(path, blob, {
+    contentType: 'image/jpeg',
+    upsert: false
+  })
+  if (error) throw error
+  const { data: { publicUrl } } = sb.storage.from(PHOTO_BUCKET).getPublicUrl(path)
+  return publicUrl
+}
+
+// ==================== ROUTER ====================
+function router() {
+  const hash = location.hash.slice(1) || '/'
+  hideSidebar()
+  if (hash.startsWith('/page/')) {
+    renderViewPage(hash.slice(6))
+  } else if (hash === '/create') {
+    renderCreatePage()
+  } else if (hash === '/') {
+    renderHomePage()
+  } else {
+    renderNotFound()
+  }
+}
+
+// ==================== VIEWS ====================
+async function renderHomePage() {
+  showLoading()
+  const pages = await getAllPages()
+  if (pages.length > 0) {
+    navigate(`/page/${pages[0].slug}`)
+  } else {
+    navigate('/create')
+  }
+}
+
+async function renderViewPage(slug) {
+  showLoading()
+  const page = await getPageBySlug(slug)
+  if (!page) {
+    renderNotFound()
+    return
+  }
+
+  currentPage = page
+  showSection('viewPage')
+
+  document.getElementById('viewSticker').textContent = page.sticker || '🎉'
+  document.getElementById('viewTitle').textContent = page.title
+  document.getElementById('viewSubtitle').textContent = page.subtitle || ''
+  document.getElementById('viewGreeting').textContent = page.greeting
+  const msgEl = document.getElementById('viewMessage')
+  msgEl.innerHTML = (page.message || '').replace(/\n/g, '<br>')
+  document.getElementById('viewSignature').textContent = page.signature || ''
+
+  document.getElementById('cardInner').classList.remove('open')
+
+  renderVideo(page.video_url)
+  renderPhotoGrid(page)
+
+  document.getElementById('qrBtn').onclick = () => showQrModal(slug)
+}
+
+function renderCreatePage() {
+  showSection('createPage')
+}
+
+function renderNotFound() {
+  showSection('viewPage')
+  document.getElementById('viewSticker').textContent = '😢'
+  document.getElementById('viewTitle').textContent = 'Страница не найдена'
+  document.getElementById('viewSubtitle').textContent = 'Такой открытки не существует'
+  document.getElementById('viewGreeting').textContent = ''
+  document.getElementById('viewMessage').textContent = ''
+  document.getElementById('viewSignature').textContent = ''
+  document.getElementById('cardInner').classList.remove('open')
+  document.getElementById('videoContainer').classList.add('hidden')
+  document.getElementById('qrBtn').onclick = null
+  document.getElementById('photoActions').classList.add('hidden')
+  document.getElementById('photoGrid').innerHTML = ''
+}
+
+// ==================== VIDEO ====================
+function renderVideo(url) {
+  const container = document.getElementById('videoContainer')
+  if (!url) {
+    container.classList.add('hidden')
+    return
+  }
+
+  const embedUrl = getYouTubeEmbedUrl(url)
+  if (embedUrl) {
+    container.innerHTML = `<iframe src="${embedUrl}" allowfullscreen loading="lazy" title="YouTube video"></iframe>`
+    container.classList.remove('hidden')
+  } else {
+    container.classList.add('hidden')
+  }
+}
+
+function getYouTubeEmbedUrl(url) {
+  if (!url) return null
+  const patterns = [
+    /youtube\.com\/watch\?v=([\w-]{11})/,
+    /youtu\.be\/([\w-]{11})/,
+    /youtube\.com\/embed\/([\w-]{11})/,
+    /^([\w-]{11})$/
+  ]
+  for (const p of patterns) {
+    const m = url.match(p)
+    if (m) return `https://www.youtube.com/embed/${m[1]}`
+  }
+  return null
+}
+
+// ==================== PHOTOS ====================
+function renderPhotoGrid(page) {
+  const grid = document.getElementById('photoGrid')
+  const actions = document.getElementById('photoActions')
+  const count = document.getElementById('photoCount')
+
+  const photos = page.photo_urls || []
+
+  if (photos.length > 0) {
+    grid.innerHTML = photos.map(url =>
+      `<div class="photo-item"><img src="${url}" alt="Фото" loading="lazy"></div>`
+    ).join('')
+  } else {
+    grid.innerHTML = '<p class="photo-empty">Пока нет фотографий</p>'
+  }
+
+  count.textContent = `${photos.length} / 5`
+  actions.classList.toggle('hidden', photos.length >= 5)
+}
+
+// ==================== QR ====================
+function showQrModal(slug) {
+  const modal = document.getElementById('qrModal')
+  const container = document.getElementById('qrContainer')
+  const linkEl = document.getElementById('qrLink')
+
+  const url = `${location.origin}${location.pathname}#/page/${slug}`
+  linkEl.textContent = url
+
+  container.innerHTML = ''
+  qrInstance = new QRCode(container, {
+    text: url,
+    width: 200,
+    height: 200,
+    colorDark: '#333333',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.H
+  })
+
+  modal.classList.remove('hidden')
+}
+
+// ==================== SIDEBAR ====================
+async function populateSidebar() {
+  const list = document.getElementById('sidebarList')
+  const pages = await getAllPages()
+
+  if (pages.length === 0) {
+    list.innerHTML = '<p class="sidebar-empty">Пока нет открыток</p>'
+    return
+  }
+
+  list.innerHTML = pages.map(p => {
+    const photoCount = (p.photo_urls || []).length
+    return `
+      <a class="sidebar-item" href="#/page/${p.slug}">
+        <span class="sidebar-sticker">${p.sticker || '🎉'}</span>
+        <div class="sidebar-info">
+          <span class="sidebar-occasion">${escapeHtml(p.occasion)}</span>
+          <span class="sidebar-date">${formatDate(p.created_at)}</span>
+        </div>
+        ${photoCount > 0 ? `<span class="sidebar-photo-badge">📷 ${photoCount}</span>` : ''}
+      </a>
+    `
+  }).join('')
+}
+
+// ==================== HELPERS ====================
+function showLoading() {
+  document.querySelectorAll('.page-section').forEach(el => el.classList.add('hidden'))
+  document.getElementById('loading').classList.remove('hidden')
+}
+
+function showSection(id) {
+  document.querySelectorAll('.page-section').forEach(el => el.classList.add('hidden'))
+  document.getElementById('loading').classList.add('hidden')
+  document.getElementById(id).classList.remove('hidden')
+}
+
+function navigate(hash) {
+  location.hash = hash
+}
+
+function formatDate(dateStr) {
+  return new Date(dateStr).toLocaleDateString('ru-RU', {
+    day: 'numeric', month: 'long', year: 'numeric'
+  })
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div')
+  div.textContent = text
+  return div.innerHTML
+}
+
+function generateSlug() {
+  return Math.random().toString(36).slice(2, 10)
+}
+
+function hideSidebar() {
+  document.getElementById('sidebar').classList.remove('open')
+  document.getElementById('sidebarOverlay').classList.remove('open')
+}
+
+// ==================== CONFETTI ====================
+let confettiActive = false
+let confettiPieces = []
+let animationId = null
 
 function createConfettiPiece() {
-  const colors = ['#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#54a0ff', '#5f27cd', '#01a3a4', '#ff6348'];
+  const colors = ['#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#54a0ff', '#5f27cd', '#01a3a4', '#ff6348']
   return {
     x: Math.random() * window.innerWidth,
     y: -20,
@@ -71,70 +316,190 @@ function createConfettiPiece() {
     vx: (Math.random() - 0.5) * 4,
     rotation: Math.random() * 360,
     rotSpeed: (Math.random() - 0.5) * 10,
-    opacity: 1,
-  };
+    opacity: 1
+  }
 }
 
 function drawConfetti(ctx) {
-  ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+  ctx.clearRect(0, 0, window.innerWidth, window.innerHeight)
   for (let i = confettiPieces.length - 1; i >= 0; i--) {
-    const p = confettiPieces[i];
-    p.x += p.vx;
-    p.y += p.vy;
-    p.vy += 0.05;
-    p.rotation += p.rotSpeed;
+    const p = confettiPieces[i]
+    p.x += p.vx
+    p.y += p.vy
+    p.vy += 0.05
+    p.rotation += p.rotSpeed
     if (p.y > window.innerHeight + 20) {
-      confettiPieces.splice(i, 1);
-      continue;
+      confettiPieces.splice(i, 1)
+      continue
     }
-    ctx.save();
-    ctx.translate(p.x, p.y);
-    ctx.rotate((p.rotation * Math.PI) / 180);
-    ctx.globalAlpha = p.opacity;
-    ctx.fillStyle = p.color;
-    ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-    ctx.restore();
+    ctx.save()
+    ctx.translate(p.x, p.y)
+    ctx.rotate((p.rotation * Math.PI) / 180)
+    ctx.globalAlpha = p.opacity
+    ctx.fillStyle = p.color
+    ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h)
+    ctx.restore()
   }
 }
 
 function startConfetti() {
-  if (confettiActive) return;
-  confettiActive = true;
-  const canvas = document.getElementById('confetti-canvas');
-  const ctx = canvas.getContext('2d');
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  if (confettiActive) return
+  confettiActive = true
+  const canvas = document.getElementById('confetti-canvas')
+  const ctx = canvas.getContext('2d')
+  canvas.width = window.innerWidth
+  canvas.height = window.innerHeight
 
-  let count = 0;
+  let count = 0
   function burst() {
-    if (!confettiActive) return;
+    if (!confettiActive) return
     for (let i = 0; i < 5; i++) {
-      confettiPieces.push(createConfettiPiece());
+      confettiPieces.push(createConfettiPiece())
     }
-    count++;
-    if (count < 60) requestAnimationFrame(burst);
+    count++
+    if (count < 60) requestAnimationFrame(burst)
   }
-  burst();
+  burst()
 
   function animate() {
-    if (!confettiActive) return;
-    drawConfetti(ctx);
-    animationId = requestAnimationFrame(animate);
+    if (!confettiActive) return
+    drawConfetti(ctx)
+    animationId = requestAnimationFrame(animate)
   }
-  animate();
+  animate()
 
   setTimeout(() => {
-    confettiActive = false;
-    if (animationId) cancelAnimationFrame(animationId);
+    confettiActive = false
+    if (animationId) cancelAnimationFrame(animationId)
     setTimeout(() => {
-      confettiPieces = [];
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }, 3000);
-  }, 5000);
+      confettiPieces = []
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+    }, 3000)
+  }, 5000)
 }
 
+// ==================== EVENTS ====================
+
+// Card
+document.getElementById('openBtn').addEventListener('click', (e) => {
+  e.stopPropagation()
+  document.getElementById('cardInner').classList.add('open')
+  startConfetti()
+})
+
+document.getElementById('card').addEventListener('click', () => {
+  const inner = document.getElementById('cardInner')
+  if (!inner.classList.contains('open')) {
+    inner.classList.add('open')
+    startConfetti()
+  }
+})
+
+// Create form
+document.getElementById('createForm').addEventListener('submit', async (e) => {
+  e.preventDefault()
+
+  const slug = generateSlug()
+  const pageData = {
+    slug,
+    occasion: document.getElementById('formOccasion').value,
+    title: document.getElementById('formTitle').value,
+    subtitle: document.getElementById('formSubtitle').value,
+    greeting: document.getElementById('formGreeting').value,
+    message: document.getElementById('formMessage').value,
+    signature: document.getElementById('formSignature').value,
+    sticker: document.getElementById('formSticker').value || '🎉',
+    video_url: document.getElementById('formVideoUrl').value,
+    photo_urls: []
+  }
+
+  try {
+    await insertPage(pageData)
+    navigate(`/page/${slug}`)
+  } catch (err) {
+    console.error(err)
+    alert('Ошибка при создании открытки. Проверьте подключение к Supabase.')
+  }
+})
+
+// Photo upload
+document.getElementById('photoInput').addEventListener('change', async (e) => {
+  const files = Array.from(e.target.files)
+  if (!currentPage || files.length === 0) return
+
+  const photos = [...(currentPage.photo_urls || [])]
+  const remaining = 5 - photos.length
+  const toUpload = files.slice(0, remaining)
+
+  for (const file of toUpload) {
+    try {
+      const url = await uploadPhoto(currentPage.slug, file)
+      photos.push(url)
+    } catch (err) {
+      console.error(err)
+      alert('Ошибка при загрузке фото')
+      break
+    }
+  }
+
+  if (photos.length > (currentPage.photo_urls || []).length) {
+    currentPage.photo_urls = photos
+    await updatePage(currentPage.slug, { photo_urls: photos })
+    renderPhotoGrid(currentPage)
+    populateSidebar()
+  }
+
+  e.target.value = ''
+})
+
+// Sidebar
+document.getElementById('menuBtn').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.add('open')
+  document.getElementById('sidebarOverlay').classList.add('open')
+  populateSidebar()
+})
+
+document.getElementById('closeSidebar').addEventListener('click', hideSidebar)
+document.getElementById('sidebarOverlay').addEventListener('click', hideSidebar)
+
+document.getElementById('createNewBtn').addEventListener('click', () => {
+  hideSidebar()
+  navigate('/create')
+})
+
+// Sidebar link clicks via delegation
+document.getElementById('sidebarList').addEventListener('click', (e) => {
+  const link = e.target.closest('a.sidebar-item')
+  if (link) hideSidebar()
+})
+
+// QR modal
+document.getElementById('closeQrBtn').addEventListener('click', () => {
+  document.getElementById('qrModal').classList.add('hidden')
+})
+
+document.getElementById('qrModal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) {
+    document.getElementById('qrModal').classList.add('hidden')
+  }
+})
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    hideSidebar()
+    document.getElementById('qrModal').classList.add('hidden')
+  }
+})
+
+// Window resize
 window.addEventListener('resize', () => {
-  const canvas = document.getElementById('confetti-canvas');
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-});
+  const canvas = document.getElementById('confetti-canvas')
+  if (canvas) {
+    canvas.width = window.innerWidth
+    canvas.height = window.innerHeight
+  }
+})
+
+// ==================== INIT ====================
+window.addEventListener('hashchange', router)
+window.addEventListener('load', router)
