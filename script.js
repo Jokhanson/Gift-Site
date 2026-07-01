@@ -428,10 +428,10 @@ function showQrModal(slug) {
   ctx.fill()
   ctx.restore()
 
-  ctx.font = `${Math.floor(iconSize * 0.65)}px serif`
+  ctx.font = `${Math.floor(iconSize * 0.6)}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  ctx.fillText(sticker, size / 2, size / 2)
+  ctx.fillText(sticker, size / 2, size / 2 + 1)
 
   modal.classList.remove('hidden')
 }
