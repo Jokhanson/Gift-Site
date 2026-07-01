@@ -417,49 +417,63 @@ body {
 /* ===== Page Actions ===== */
 .page-actions {
   display: flex;
-  gap: 10px;
-  justify-content: center;
+  gap: 8px;
   align-items: center;
   width: 100%;
-  padding: 14px 16px;
-  background: #fff;
-  border-radius: 18px;
-  border: 1px solid rgba(0,0,0,0.04);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  padding-top: 20px;
+  border-top: 1px solid rgba(0,0,0,0.06);
 }
 
 .action-btn {
-  padding: 10px 24px;
-  border: 1px solid #e0dcd8;
-  background: #fff;
+  padding: 9px 20px;
+  border: 1.5px solid #e0dcd8;
+  background: transparent;
   color: #1a1a2e;
   border-radius: 60px;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
   font-family: inherit;
   transition: all 0.25s;
   white-space: nowrap;
+  font-weight: 500;
 }
 
 .action-btn:hover {
+  border-color: #ff4757;
+  color: #ff4757;
+  background: rgba(255,71,87,0.04);
+}
+
+#qrBtn {
   background: #1a1a2e;
   border-color: #1a1a2e;
   color: #fff;
 }
 
-.more-menu { position: relative; }
+#qrBtn:hover {
+  background: #ff4757;
+  border-color: #ff4757;
+  color: #fff;
+}
 
-.more-btn { font-size: 20px; padding: 10px 14px; }
+.more-menu { position: relative; margin-left: auto; }
+
+.more-btn {
+  font-size: 18px;
+  padding: 9px 12px;
+  border-radius: 50%;
+  line-height: 1;
+}
 
 .more-dropdown {
   position: absolute;
   right: 0;
-  bottom: calc(100% + 8px);
+  bottom: calc(100% + 10px);
   background: #fff;
   border-radius: 14px;
   box-shadow: 0 12px 40px rgba(0,0,0,0.1);
   overflow: hidden;
-  min-width: 180px;
+  min-width: 170px;
   z-index: 10;
   border: 1px solid rgba(0,0,0,0.04);
 }
@@ -468,7 +482,7 @@ body {
 
 .dropdown-item {
   display: block; width: 100%;
-  padding: 12px 16px;
+  padding: 11px 16px;
   border: none; background: none;
   font-size: 14px; font-family: inherit;
   text-align: left; cursor: pointer;
@@ -482,12 +496,13 @@ body {
 .dropdown-danger:hover { background: rgba(255,71,87,0.05); }
 
 .view-counter {
-  color: #aaa;
-  font-size: 13px;
+  color: #bbb;
+  font-size: 12px;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  margin-right: auto;
+  gap: 3px;
+  margin-right: 12px;
+  flex-shrink: 0;
 }
 
 /* ===== Create Page ===== */
@@ -786,9 +801,7 @@ body {
 
   .create-container { padding: 32px 24px; }
 
-  .page-actions { flex-wrap: wrap; gap: 8px; }
-
-  .view-counter { width: 100%; text-align: center; margin-right: 0; }
-
-  .action-btn { flex: 1; text-align: center; }
+  .page-actions { flex-wrap: nowrap; gap: 6px; }
+  .view-counter { width: auto; text-align: left; margin-right: 8px; }
+  .action-btn { flex: 0 1 auto; text-align: center; padding: 8px 14px; font-size: 12px; }
 }
