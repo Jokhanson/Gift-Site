@@ -1,7 +1,7 @@
 // ==================== CONFIG ====================
 // TODO: Замените на данные вашего Supabase проекта
-const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co'
-const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY'
+const SUPABASE_URL = 'https://supabase.com/dashboard/project/chiwgpcagylictmpdilp/storage/files/buckets/gift-photos'
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoaXdncGNhZ3lsaWN0bXBkaWxwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4NzUzNTUsImV4cCI6MjA5ODQ1MTM1NX0.2xKmM4lHr0WnPt3881TP8H_9pHUz75QdPpX_Caxo4Uc'
 
 // ==================== SUPABASE ====================
 const { createClient } = supabase
