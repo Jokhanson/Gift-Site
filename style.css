@@ -163,15 +163,30 @@ body {
 }
 
 .hero-sticker {
-  font-size: 96px;
-  margin-bottom: 8px;
-  filter: drop-shadow(0 0 30px rgba(255,195,18,0.3));
-  animation: float 3s ease-in-out infinite;
+  font-size: 110px;
+  margin-bottom: 12px;
+  filter:
+    drop-shadow(0 0 20px rgba(255,195,18,0.5))
+    drop-shadow(0 0 60px rgba(255,195,18,0.25))
+    drop-shadow(0 0 120px rgba(255,195,18,0.1));
+  animation: floatGlow 3s ease-in-out infinite;
 }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-12px); }
+@keyframes floatGlow {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    filter:
+      drop-shadow(0 0 20px rgba(255,195,18,0.5))
+      drop-shadow(0 0 60px rgba(255,195,18,0.25))
+      drop-shadow(0 0 120px rgba(255,195,18,0.1));
+  }
+  50% {
+    transform: translateY(-14px) scale(1.04);
+    filter:
+      drop-shadow(0 0 30px rgba(255,195,18,0.6))
+      drop-shadow(0 0 80px rgba(255,195,18,0.35))
+      drop-shadow(0 0 150px rgba(255,195,18,0.15));
+  }
 }
 
 .hero-title {
@@ -703,7 +718,7 @@ body {
 
 /* ===== Responsive ===== */
 @media (max-width: 480px) {
-  .hero-sticker { font-size: 72px; }
+  .hero-sticker { font-size: 80px; }
   .hero { padding: 32px 20px; }
 
   .sidebar { width: 300px; right: -320px; }
