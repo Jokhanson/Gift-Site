@@ -76,6 +76,7 @@
 
       <div class="page-actions">
         <button id="qrBtn" class="action-btn">Показать QR-код</button>
+        <button id="deleteBtn" class="action-btn delete-btn">Удалить</button>
       </div>
     </div>
   </div>
@@ -89,6 +90,20 @@
       <div id="qrContainer" class="qr-container"></div>
       <p id="qrLink" class="qr-link"></p>
       <p class="qr-hint">Отсканируйте, чтобы открыть страницу</p>
+    </div>
+  </div>
+
+  <div id="deleteModal" class="modal hidden">
+    <div class="modal-content delete-modal-content">
+      <div class="modal-header">
+        <h3>Удалить открытку?</h3>
+        <button id="closeDeleteBtn" class="icon-btn">✕</button>
+      </div>
+      <p class="delete-modal-text">Открытка и все её фото будут безвозвратно удалены.</p>
+      <div class="modal-actions">
+        <button id="confirmDeleteBtn" class="btn-danger">Удалить</button>
+        <button id="cancelDeleteBtn" class="btn-secondary">Отмена</button>
+      </div>
     </div>
   </div>
 

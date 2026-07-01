@@ -53,6 +53,25 @@ async function updatePage(slug, updates) {
   if (error) throw error
 }
 
+async function deletePage(slug) {
+  const { data: page, error: fetchError } = await sb
+    .from('pages').select('photo_urls').eq('slug', slug).maybeSingle()
+  if (fetchError) throw fetchError
+
+  if (page?.photo_urls?.length > 0) {
+    const paths = page.photo_urls.map(url => {
+      const parts = url.split('/')
+      return parts.slice(-2).join('/')
+    })
+    const { error: storageError } = await sb.storage
+      .from(PHOTO_BUCKET).remove(paths)
+    if (storageError) console.error('Storage delete error:', storageError)
+  }
+
+  const { error } = await sb.from('pages').delete().eq('slug', slug)
+  if (error) throw error
+}
+
 // ==================== PHOTO UPLOAD ====================
 function compressImage(file, maxSize = 1200, quality = 0.7) {
   return new Promise((resolve, reject) => {
@@ -142,6 +161,8 @@ async function renderViewPage(slug) {
   renderPhotoGrid(page)
 
   document.getElementById('qrBtn').onclick = () => showQrModal(slug)
+  document.getElementById('deleteBtn').classList.remove('hidden')
+  document.getElementById('deleteBtn').onclick = () => showDeleteModal(slug)
 }
 
 function renderCreatePage() {
@@ -159,6 +180,7 @@ function renderNotFound() {
   document.getElementById('cardInner').classList.remove('open')
   document.getElementById('videoContainer').classList.add('hidden')
   document.getElementById('qrBtn').onclick = null
+  document.getElementById('deleteBtn').classList.add('hidden')
   document.getElementById('photoActions').classList.add('hidden')
   document.getElementById('photoGrid').innerHTML = ''
 }
@@ -498,10 +520,40 @@ document.getElementById('qrModal').addEventListener('click', (e) => {
   }
 })
 
+// Delete
+function showDeleteModal(slug) {
+  document.getElementById('deleteModal').classList.remove('hidden')
+  document.getElementById('confirmDeleteBtn').onclick = async () => {
+    try {
+      await deletePage(slug)
+      document.getElementById('deleteModal').classList.add('hidden')
+      navigate('/')
+    } catch (err) {
+      console.error(err)
+      alert('Ошибка при удалении открытки')
+    }
+  }
+}
+
+document.getElementById('closeDeleteBtn').addEventListener('click', () => {
+  document.getElementById('deleteModal').classList.add('hidden')
+})
+
+document.getElementById('cancelDeleteBtn').addEventListener('click', () => {
+  document.getElementById('deleteModal').classList.add('hidden')
+})
+
+document.getElementById('deleteModal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) {
+    document.getElementById('deleteModal').classList.add('hidden')
+  }
+})
+
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     hideSidebar()
     document.getElementById('qrModal').classList.add('hidden')
+    document.getElementById('deleteModal').classList.add('hidden')
   }
 })
 
