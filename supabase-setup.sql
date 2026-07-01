@@ -31,6 +31,9 @@ CREATE POLICY "Allow public insert" ON pages
 CREATE POLICY "Allow public update" ON pages
   FOR UPDATE USING (true);
 
+CREATE POLICY "Allow public delete" ON pages
+  FOR DELETE USING (true);
+
 -- 3. Storage bucket для фото (выполнить через Storage UI или SQL)
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('gift-photos', 'gift-photos', true)
@@ -42,3 +45,6 @@ CREATE POLICY "Allow public read photos" ON storage.objects
 
 CREATE POLICY "Allow public upload photos" ON storage.objects
   FOR INSERT WITH CHECK (bucket_id = 'gift-photos');
+
+CREATE POLICY "Allow public delete photos" ON storage.objects
+  FOR DELETE USING (bucket_id = 'gift-photos');
