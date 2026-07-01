@@ -2,7 +2,13 @@
 
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background: #f5f0ec;
+  background:
+    radial-gradient(ellipse 80% 60% at 30% 30%, rgba(255,71,87,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 70% at 70% 40%, rgba(255,195,18,0.06) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 60% at 50% 70%, rgba(102,51,255,0.05) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 60% at 80% 50%, rgba(255,107,200,0.06) 0%, transparent 50%),
+    #f5f0ec;
+  background-attachment: fixed;
   color: #1a1a2e;
   min-height: 100vh;
   overflow-x: hidden;
@@ -257,28 +263,6 @@ body {
   max-width: 640px;
   padding: 0 24px 60px;
   animation: fadeUp 0.8s ease;
-  position: relative;
-}
-
-.page-content::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background:
-    radial-gradient(ellipse 80% 60% at 30% 40%, rgba(255,71,87,0.1) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 80% at 70% 30%, rgba(255,195,18,0.08) 0%, transparent 50%),
-    radial-gradient(ellipse 70% 50% at 50% 70%, rgba(102,51,255,0.06) 0%, transparent 50%),
-    radial-gradient(ellipse 50% 70% at 80% 60%, rgba(255,107,200,0.08) 0%, transparent 50%);
-  background-size: 200% 200%;
-  animation: contentWave 15s ease-in-out infinite alternate;
-  filter: blur(40px);
-  pointer-events: none;
-}
-
-@keyframes contentWave {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 100% 50%; }
 }
 
 @keyframes fadeUp {
