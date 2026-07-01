@@ -2,13 +2,7 @@
 
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background:
-    radial-gradient(ellipse 80% 60% at 30% 30%, rgba(255,71,87,0.08) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 70% at 70% 40%, rgba(255,195,18,0.06) 0%, transparent 55%),
-    radial-gradient(ellipse 70% 60% at 50% 70%, rgba(102,51,255,0.05) 0%, transparent 50%),
-    radial-gradient(ellipse 50% 60% at 80% 50%, rgba(255,107,200,0.06) 0%, transparent 50%),
-    #f5f0ec;
-  background-attachment: fixed;
+  background: #f5f0ec;
   color: #1a1a2e;
   min-height: 100vh;
   overflow-x: hidden;
@@ -272,6 +266,31 @@ body {
   max-width: 640px;
   padding: 0 24px 60px;
   animation: fadeUp 0.8s ease;
+  position: relative;
+}
+
+.page-content::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse 70% 50% at 15% 30%, rgba(255,71,87,0.2) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 60% at 75% 25%, rgba(255,195,18,0.15) 0%, transparent 50%),
+    radial-gradient(ellipse 80% 50% at 45% 75%, rgba(155,89,182,0.12) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 60% at 85% 60%, rgba(255,107,200,0.12) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 50% at 5% 70%, rgba(108,92,231,0.1) 0%, transparent 50%);
+  background-size: 200% 200%;
+  animation: contentWave 12s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes contentWave {
+  0% { background-position: 0% 40%; }
+  25% { background-position: 100% 20%; }
+  50% { background-position: 50% 80%; }
+  75% { background-position: 0% 10%; }
+  100% { background-position: 100% 60%; }
 }
 
 @keyframes fadeUp {
