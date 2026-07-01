@@ -12,11 +12,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main-site
 
-      - name: Deploy to gh-pages branch
+      - name: Deploy main → root
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .
-          destination_dir: ${{ github.ref_name == 'experimental' && 'experimental' || '' }}
+          publish_dir: ./main-site
+          destination_dir: ''
+          keep_files: false
+
+      - uses: actions/checkout@v4
+        if: github.ref_name == 'experimental'
+        with:
+          ref: experimental
+          path: experimental-site
+
+      - name: Deploy experimental → /experimental/
+        if: github.ref_name == 'experimental'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./experimental-site
+          destination_dir: experimental
           keep_files: true
+          disable_nojekyll: true
