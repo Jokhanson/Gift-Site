@@ -171,7 +171,7 @@ function renderVideo(url) {
     return
   }
 
-  const embedUrl = getYouTubeEmbedUrl(url.trim())
+  const embedUrl = getVideoEmbedUrl(url)
   if (embedUrl) {
     container.innerHTML = `<iframe src="${embedUrl}" allowfullscreen loading="lazy" title="YouTube video"></iframe>`
     container.classList.remove('hidden')
@@ -180,20 +180,32 @@ function renderVideo(url) {
   }
 }
 
-function getYouTubeEmbedUrl(url) {
+function getVideoEmbedUrl(url) {
   if (!url) return null
-  const patterns = [
-    /(?:youtube\.com|youtu\.be)\/watch\?v=([\w-]{11})/,
-    /youtu\.be\/([\w-]{11})/,
-    /youtube\.com\/embed\/([\w-]{11})/,
-    /youtube\.com\/shorts\/([\w-]{11})/,
-    /youtube\.com\/live\/([\w-]{11})/,
-    /^([\w-]{11})$/
-  ]
-  for (const p of patterns) {
-    const m = url.match(p)
-    if (m) return `https://www.youtube.com/embed/${m[1]}`
+
+  const urlTrimmed = url.trim()
+  const params = new URLSearchParams(urlTrimmed.split('?')[1] || '')
+  const timeParam = params.get('t') || ''
+
+  const ytMatch = urlTrimmed.match(
+    /(?:youtube\.com|youtu\.be)\/watch\?v=([\w-]{11})/
+  ) || urlTrimmed.match(/youtu\.be\/([\w-]{11})/)
+    || urlTrimmed.match(/youtube\.com\/embed\/([\w-]{11})/)
+    || urlTrimmed.match(/youtube\.com\/shorts\/([\w-]{11})/)
+    || urlTrimmed.match(/youtube\.com\/live\/([\w-]{11})/)
+    || urlTrimmed.match(/^([\w-]{11})$/)
+  if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`
+
+  const vkMatch = urlTrimmed.match(/vk(?:video)?\.ru\/video(-?\d+)_(\d+)/)
+    || urlTrimmed.match(/vk\.com\/video(-?\d+)_(\d+)/)
+  if (vkMatch) {
+    const oid = vkMatch[1]
+    const vid = vkMatch[2]
+    let embed = `https://vk.com/video_ext.php?oid=${oid}&id=${vid}`
+    if (timeParam) embed += `&t=${timeParam}`
+    return embed
   }
+
   return null
 }
 
