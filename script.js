@@ -171,7 +171,7 @@ function renderVideo(url) {
     return
   }
 
-  const embedUrl = getYouTubeEmbedUrl(url)
+  const embedUrl = getYouTubeEmbedUrl(url.trim())
   if (embedUrl) {
     container.innerHTML = `<iframe src="${embedUrl}" allowfullscreen loading="lazy" title="YouTube video"></iframe>`
     container.classList.remove('hidden')
@@ -183,9 +183,11 @@ function renderVideo(url) {
 function getYouTubeEmbedUrl(url) {
   if (!url) return null
   const patterns = [
-    /youtube\.com\/watch\?v=([\w-]{11})/,
+    /(?:youtube\.com|youtu\.be)\/watch\?v=([\w-]{11})/,
     /youtu\.be\/([\w-]{11})/,
     /youtube\.com\/embed\/([\w-]{11})/,
+    /youtube\.com\/shorts\/([\w-]{11})/,
+    /youtube\.com\/live\/([\w-]{11})/,
     /^([\w-]{11})$/
   ]
   for (const p of patterns) {
