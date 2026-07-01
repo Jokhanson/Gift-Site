@@ -459,10 +459,14 @@ body {
 .more-menu { position: relative; margin-left: auto; }
 
 .more-btn {
+  width: 40px;
+  height: 40px;
+  padding: 0;
   font-size: 18px;
-  padding: 9px 12px;
   border-radius: 50%;
-  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .more-dropdown {

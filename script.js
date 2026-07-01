@@ -326,8 +326,8 @@ function renderPhotoGrid(page) {
     grid.innerHTML = '<p class="photo-empty">Пока нет фотографий</p>'
   }
 
-  count.textContent = `${photos.length} / 5`
-  actions.classList.toggle('hidden', photos.length >= 5)
+  count.textContent = `${photos.length} / 6`
+  actions.classList.toggle('hidden', photos.length >= 6)
 }
 
 function openLightbox() {
@@ -696,7 +696,7 @@ document.getElementById('photoInput').addEventListener('change', async (e) => {
   if (!currentPage || files.length === 0) return
 
   const photos = [...(currentPage.photo_urls || [])]
-  const remaining = 5 - photos.length
+  const remaining = 6 - photos.length
   const toUpload = files.slice(0, remaining)
 
   const uploadLabel = document.getElementById('photoUploadLabel')
