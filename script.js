@@ -163,6 +163,7 @@ async function renderViewPage(slug) {
 
   // Reset hero — hide content, put hero back
   document.getElementById('pageContent').classList.add('hidden')
+  document.getElementById('bgGlow').classList.add('hidden')
   document.getElementById('hero').classList.remove('hidden')
   window.scrollTo({ top: 0, behavior: 'instant' })
 
@@ -220,6 +221,7 @@ function renderNotFound() {
   document.getElementById('viewMessage').textContent = ''
   document.getElementById('viewSignature').textContent = ''
   document.getElementById('pageContent').classList.add('hidden')
+  document.getElementById('bgGlow').classList.add('hidden')
   document.getElementById('videoContainer').classList.add('hidden')
   document.getElementById('qrBtn').onclick = null
   document.getElementById('editBtn').onclick = null
@@ -650,6 +652,7 @@ document.getElementById('openBtn').addEventListener('click', (e) => {
   const hero = document.getElementById('hero')
   content.classList.remove('hidden')
   hero.classList.add('hidden')
+  document.getElementById('bgGlow').classList.remove('hidden')
   startConfetti()
   setTimeout(() => {
     content.scrollIntoView({ behavior: 'smooth', block: 'start' })
