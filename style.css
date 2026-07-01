@@ -407,6 +407,7 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
+  margin-bottom: 40px;
 }
 
 .photo-upload-btn {
@@ -707,9 +708,25 @@ body {
   align-items: center;
   justify-content: center;
   cursor: zoom-out;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.35s ease, visibility 0.35s ease, backdrop-filter 0.35s ease;
 }
 
-.lightbox.hidden { display: none; }
+.lightbox.hidden {
+  display: flex !important;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+}
+
+.lightbox:not(.hidden) {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
 
 .lightbox-img {
   max-width: 90vw;
@@ -717,6 +734,15 @@ body {
   object-fit: contain;
   border-radius: 12px;
   cursor: default;
+}
+
+.lightbox:not(.hidden) .lightbox-img {
+  animation: lightboxIn 0.35s ease;
+}
+
+@keyframes lightboxIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 .lightbox-close {
