@@ -246,67 +246,25 @@ function renderVideo(url) {
   container.classList.remove('hidden')
   frame.innerHTML = ''
 
-  const ytId = extractYoutubeId(url)
-  if (ytId) {
-    const wrapper = document.createElement('div')
-    wrapper.className = 'video-thumb-wrapper'
+  const wrapper = document.createElement('div')
+  wrapper.className = 'video-thumb-wrapper'
 
-    const thumb = document.createElement('img')
-    thumb.className = 'video-thumb'
-    thumb.src = `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`
-    thumb.alt = ''
-    thumb.loading = 'lazy'
-    thumb.onerror = function () { this.src = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` }
+  const playBtn = document.createElement('button')
+  playBtn.className = 'video-play-btn'
+  playBtn.setAttribute('aria-label', 'Смотреть видео')
 
-    const playBtn = document.createElement('button')
-    playBtn.className = 'video-play-btn'
-    playBtn.setAttribute('aria-label', 'Смотреть видео')
+  wrapper.appendChild(playBtn)
+  frame.appendChild(wrapper)
 
-    wrapper.appendChild(thumb)
-    wrapper.appendChild(playBtn)
-    frame.appendChild(wrapper)
-
-    wrapper.addEventListener('click', function loadVideo() {
-      const iframe = document.createElement('iframe')
-      iframe.setAttribute('allowfullscreen', '')
-      iframe.setAttribute('loading', 'lazy')
-      iframe.title = 'Video'
-      iframe.src = embedUrl
-      frame.innerHTML = ''
-      frame.appendChild(iframe)
-    })
-  } else {
-    const wrapper = document.createElement('div')
-    wrapper.className = 'video-thumb-wrapper'
-
-    const playBtn = document.createElement('button')
-    playBtn.className = 'video-play-btn'
-    playBtn.setAttribute('aria-label', 'Смотреть видео')
-
-    wrapper.appendChild(playBtn)
-    frame.appendChild(wrapper)
-
-    wrapper.addEventListener('click', function loadVideo() {
-      const iframe = document.createElement('iframe')
-      iframe.setAttribute('allowfullscreen', '')
-      iframe.setAttribute('loading', 'lazy')
-      iframe.title = 'Video'
-      iframe.src = embedUrl
-      frame.innerHTML = ''
-      frame.appendChild(iframe)
-    })
-  }
-}
-
-function extractYoutubeId(url) {
-  const t = url.trim()
-  const m = t.match(/(?:youtube\.com|youtu\.be)\/watch\?v=([\w-]{11})/)
-    || t.match(/youtu\.be\/([\w-]{11})/)
-    || t.match(/youtube\.com\/embed\/([\w-]{11})/)
-    || t.match(/youtube\.com\/shorts\/([\w-]{11})/)
-    || t.match(/youtube\.com\/live\/([\w-]{11})/)
-    || t.match(/^([\w-]{11})$/)
-  return m ? m[1] : null
+  wrapper.addEventListener('click', function loadVideo() {
+    const iframe = document.createElement('iframe')
+    iframe.setAttribute('allowfullscreen', '')
+    iframe.setAttribute('loading', 'lazy')
+    iframe.title = 'Video'
+    iframe.src = embedUrl
+    frame.innerHTML = ''
+    frame.appendChild(iframe)
+  })
 }
 
 function parseTimeToSeconds(str) {
