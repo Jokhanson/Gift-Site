@@ -202,12 +202,26 @@ function renderVideo(url) {
   }
 }
 
+function parseTimeToSeconds(str) {
+  if (!str) return ''
+  if (/^\d+$/.test(str)) return str
+  let total = 0
+  const h = str.match(/(\d+)h/)
+  const m = str.match(/(\d+)m/)
+  const s = str.match(/(\d+)s/)
+  if (h) total += parseInt(h[1]) * 3600
+  if (m) total += parseInt(m[1]) * 60
+  if (s) total += parseInt(s[1])
+  return total ? String(total) : str
+}
+
 function getVideoEmbedUrl(url) {
   if (!url) return null
 
   const urlTrimmed = url.trim()
   const params = new URLSearchParams(urlTrimmed.split('?')[1] || '')
   const timeParam = params.get('t') || ''
+  const startSec = parseTimeToSeconds(timeParam)
 
   const ytMatch = urlTrimmed.match(
     /(?:youtube\.com|youtu\.be)\/watch\?v=([\w-]{11})/
@@ -216,7 +230,11 @@ function getVideoEmbedUrl(url) {
     || urlTrimmed.match(/youtube\.com\/shorts\/([\w-]{11})/)
     || urlTrimmed.match(/youtube\.com\/live\/([\w-]{11})/)
     || urlTrimmed.match(/^([\w-]{11})$/)
-  if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`
+  if (ytMatch) {
+    let embed = `https://www.youtube.com/embed/${ytMatch[1]}`
+    if (startSec) embed += `?start=${startSec}`
+    return embed
+  }
 
   const vkMatch = urlTrimmed.match(/vk(?:video)?\.ru\/video(-?\d+)_(\d+)/)
     || urlTrimmed.match(/vk\.com\/video(-?\d+)_(\d+)/)
@@ -224,7 +242,7 @@ function getVideoEmbedUrl(url) {
     const oid = vkMatch[1]
     const vid = vkMatch[2]
     let embed = `https://vk.com/video_ext.php?oid=${oid}&id=${vid}`
-    if (timeParam) embed += `&t=${timeParam}`
+    if (startSec) embed += `&t=${startSec}`
     return embed
   }
 
