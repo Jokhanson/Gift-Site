@@ -54,18 +54,15 @@ async function updatePage(slug, updates) {
 }
 
 async function deletePage(slug) {
-  const { data: page, error: fetchError } = await sb
-    .from('pages').select('photo_urls').eq('slug', slug).maybeSingle()
-  if (fetchError) throw fetchError
+  const { data: files, error: listError } = await sb.storage
+    .from(PHOTO_BUCKET).list(slug)
+  if (listError) console.error('Storage list error:', listError)
 
-  if (page?.photo_urls?.length > 0) {
-    const paths = page.photo_urls.map(url => {
-      const parts = url.split('/')
-      return parts.slice(-2).join('/')
-    })
-    const { error: storageError } = await sb.storage
+  if (files?.length > 0) {
+    const paths = files.map(f => `${slug}/${f.name}`)
+    const { error: removeError } = await sb.storage
       .from(PHOTO_BUCKET).remove(paths)
-    if (storageError) console.error('Storage delete error:', storageError)
+    if (removeError) console.error('Storage remove error:', removeError)
   }
 
   const { error } = await sb.from('pages').delete().eq('slug', slug)
@@ -76,6 +73,7 @@ async function deletePage(slug) {
 function compressImage(file, maxSize = 1200, quality = 0.7) {
   return new Promise((resolve, reject) => {
     const img = new Image()
+    const objectUrl = URL.createObjectURL(file)
     img.onload = () => {
       let width = img.width
       let height = img.height
@@ -89,12 +87,16 @@ function compressImage(file, maxSize = 1200, quality = 0.7) {
       canvas.height = height
       const ctx = canvas.getContext('2d')
       ctx.drawImage(img, 0, 0, width, height)
+      URL.revokeObjectURL(objectUrl)
       canvas.toBlob((blob) => {
         resolve(blob)
       }, 'image/jpeg', quality)
     }
-    img.onerror = () => reject(new Error('Failed to load image'))
-    img.src = URL.createObjectURL(file)
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl)
+      reject(new Error('Failed to load image'))
+    }
+    img.src = objectUrl
   })
 }
 
@@ -195,7 +197,15 @@ function renderVideo(url) {
 
   const embedUrl = getVideoEmbedUrl(url)
   if (embedUrl) {
-    container.innerHTML = `<iframe src="${embedUrl}" allowfullscreen loading="lazy" title="YouTube video"></iframe>`
+    let iframe = container.querySelector('iframe')
+    if (!iframe) {
+      iframe = document.createElement('iframe')
+      iframe.setAttribute('allowfullscreen', '')
+      iframe.setAttribute('loading', 'lazy')
+      iframe.title = 'Video'
+      container.appendChild(iframe)
+    }
+    iframe.src = embedUrl
     container.classList.remove('hidden')
   } else {
     container.classList.add('hidden')
@@ -304,8 +314,8 @@ async function populateSidebar() {
   list.innerHTML = pages.map(p => {
     const photoCount = (p.photo_urls || []).length
     return `
-      <a class="sidebar-item" href="#/page/${p.slug}">
-        <span class="sidebar-sticker">${p.sticker || '🎉'}</span>
+      <a class="sidebar-item" href="#/page/${encodeURIComponent(p.slug)}">
+        <span class="sidebar-sticker">${escapeHtml(p.sticker || '🎉')}</span>
         <div class="sidebar-info">
           <span class="sidebar-occasion">${escapeHtml(p.occasion)}</span>
           <span class="sidebar-date">${formatDate(p.created_at)}</span>
@@ -317,7 +327,22 @@ async function populateSidebar() {
 }
 
 // ==================== HELPERS ====================
+function stopConfetti() {
+  confettiActive = false
+  if (animationId) {
+    cancelAnimationFrame(animationId)
+    animationId = null
+  }
+  confettiPieces = []
+  const canvas = document.getElementById('confetti-canvas')
+  if (canvas) {
+    const ctx = canvas.getContext('2d')
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+  }
+}
+
 function showLoading() {
+  stopConfetti()
   document.querySelectorAll('.page-section').forEach(el => el.classList.add('hidden'))
   document.getElementById('loading').classList.remove('hidden')
 }
@@ -485,6 +510,11 @@ document.getElementById('photoInput').addEventListener('change', async (e) => {
   const remaining = 5 - photos.length
   const toUpload = files.slice(0, remaining)
 
+  const uploadLabel = document.getElementById('photoUploadLabel')
+  const origText = uploadLabel.textContent
+  uploadLabel.textContent = 'Загрузка...'
+  uploadLabel.style.pointerEvents = 'none'
+
   for (const file of toUpload) {
     try {
       const url = await uploadPhoto(currentPage.slug, file)
@@ -495,6 +525,9 @@ document.getElementById('photoInput').addEventListener('change', async (e) => {
       break
     }
   }
+
+  uploadLabel.textContent = origText
+  uploadLabel.style.pointerEvents = ''
 
   if (photos.length > (currentPage.photo_urls || []).length) {
     currentPage.photo_urls = photos
