@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gift Site</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❤️</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="confetti-canvas"></canvas>
+
+  <button id="menuBtn" class="menu-btn" aria-label="Меню">☰</button>
+
+  <div id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+      <h3>История поздравлений</h3>
+      <button id="closeSidebar" class="icon-btn">✕</button>
+    </div>
+    <div id="sidebarList" class="sidebar-list"></div>
+    <div class="sidebar-footer">
+      <button id="createNewBtn" class="create-new-btn">+ Новая открытка</button>
+    </div>
+  </div>
+  <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+  <div id="app" class="app">
+    <div id="bgGlow" class="bg-glow hidden"></div>
+    <div id="loading" class="loading hidden">Загрузка...</div>
+
+    <div id="createPage" class="page-section hidden">
+      <div class="create-container">
+        <h1 id="formTitle">Создать открытку</h1>
+        <form id="createForm" class="create-form">
+          <label>Повод <input type="text" id="formOccasion" placeholder="8 марта, День рождения..." required></label>
+          <label>Заголовок <input type="text" id="formTitleField" value="С Праздником!" required></label>
+          <label>Подзаголовок <input type="text" id="formSubtitle" value="Пусть этот день принесёт радость"></label>
+          <label>Обращение <input type="text" id="formGreeting" value="Дорогая!" required></label>
+          <label>Текст поздравления <textarea id="formMessage" rows="5" required>От всей души поздравляю тебя!</textarea></label>
+          <label>Подпись <input type="text" id="formSignature" value="С любовью"></label>
+          <label>Стикер <input type="text" id="formSticker" value="🎉" maxlength="4"></label>
+          <label>Ссылка на видео (YouTube / VK) <input type="url" id="formVideoUrl" placeholder="https://youtube.com/watch?v=..."></label>
+          <button type="submit" class="submit-btn" id="formSubmitBtn">Создать открытку</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="viewPage" class="page-section hidden">
+      <!-- Hero area -->
+      <div class="hero" id="hero">
+        <canvas id="waveCanvas" class="wave-canvas"></canvas>
+        <div class="hero-sticker" id="viewSticker">🎉</div>
+        <h1 class="hero-title" id="viewTitle">С Праздником!</h1>
+        <p class="hero-subtitle" id="viewSubtitle">Пусть этот день принесёт радость</p>
+        <button class="hero-btn" id="openBtn">✨ Открыть поздравление</button>
+      </div>
+
+      <!-- Content revealed after clicking open -->
+      <div class="page-content hidden" id="pageContent">
+        <div class="section-divider"><span>💌</span></div>
+
+        <!-- Letter -->
+        <section class="letter">
+          <h2 class="letter-greeting" id="viewGreeting">Дорогая!</h2>
+          <div class="letter-body" id="viewMessage">Поздравляю!</div>
+          <p class="letter-signature" id="viewSignature">С любовью</p>
+        </section>
+
+        <div class="section-divider"><span>🎬</span></div>
+
+        <!-- Video -->
+        <div id="videoContainer" class="video-wrapper hidden">
+          <p class="section-label">Видео</p>
+          <div class="video-frame" id="videoFrame"></div>
+        </div>
+
+        <div class="section-divider"><span>📸</span></div>
+
+        <!-- Photos -->
+        <section class="photo-section">
+          <h3 class="section-label">Фото воспоминания</h3>
+          <div id="photoGrid" class="photo-grid"></div>
+          <div id="photoActions" class="photo-actions">
+            <label class="photo-upload-btn" id="photoUploadLabel">
+              <input type="file" accept="image/*" multiple id="photoInput" hidden>
+              + Добавить фото
+            </label>
+            <span class="photo-count" id="photoCount">0 / 6</span>
+          </div>
+        </section>
+
+        <!-- Actions -->
+        <div class="page-actions">
+          <span id="viewCounter" class="view-counter hidden"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span id="viewCountNum">0</span></span>
+          <button id="qrBtn" class="action-btn">Показать QR</button>
+          <div class="more-menu">
+            <button id="moreBtn" class="action-btn more-btn">⋮</button>
+            <div id="moreDropdown" class="more-dropdown hidden">
+              <button id="editBtn" class="dropdown-item">✏️ Редактировать</button>
+              <button id="deleteBtn" class="dropdown-item dropdown-danger">🗑️ Удалить</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="qrModal" class="modal hidden">
+    <div class="modal-content qr-modal-content">
+      <div class="modal-header">
+        <h3>QR-код</h3>
+        <button id="closeQrBtn" class="icon-btn">✕</button>
+      </div>
+      <div id="qrContainer" class="qr-container"></div>
+      <p id="qrLink" class="qr-link"></p>
+      <p class="qr-hint">Отсканируйте, чтобы открыть страницу</p>
+      <button id="downloadQrBtn" class="action-btn" style="margin-top:12px">⬇ Скачать QR</button>
+    </div>
+  </div>
+
+  <div id="deleteModal" class="modal hidden">
+    <div class="modal-content delete-modal-content">
+      <div class="modal-header">
+        <h3>Удалить открытку?</h3>
+        <button id="closeDeleteBtn" class="icon-btn">✕</button>
+      </div>
+      <p class="delete-modal-text">Открытка и все её фото будут безвозвратно удалены.</p>
+      <div class="modal-actions">
+        <button id="confirmDeleteBtn" class="btn-danger">Удалить</button>
+        <button id="cancelDeleteBtn" class="btn-secondary">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="lightbox" class="lightbox hidden">
+    <button id="lightboxClose" class="lightbox-close">✕</button>
+    <button id="lightboxPrev" class="lightbox-nav lightbox-prev">‹</button>
+    <button id="lightboxNext" class="lightbox-nav lightbox-next">›</button>
+    <img id="lightboxImg" class="lightbox-img" src="" alt="Фото">
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
