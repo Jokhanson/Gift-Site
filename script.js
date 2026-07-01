@@ -168,6 +168,7 @@ async function renderViewPage(slug) {
 
   renderVideo(page.video_url)
   renderPhotoGrid(page)
+  initWaveAnimation()
 
   document.getElementById('qrBtn').onclick = () => showQrModal(slug)
   document.getElementById('editBtn').onclick = () => {
@@ -815,6 +816,92 @@ document.getElementById('moreBtn').addEventListener('click', (e) => {
   const dd = document.getElementById('moreDropdown')
   dd.classList.toggle('hidden')
 })
+
+// ==================== WAVE ANIMATION ====================
+function initWaveAnimation() {
+  const canvas = document.getElementById('waveCanvas')
+  if (!canvas) return
+
+  const hero = document.getElementById('hero')
+  const dpr = window.devicePixelRatio || 1
+  let w = hero.clientWidth
+  let h = hero.clientHeight
+  canvas.width = w * dpr
+  canvas.height = h * dpr
+  canvas.style.width = w + 'px'
+  canvas.style.height = h + 'px'
+
+  const ctx = canvas.getContext('2d')
+  ctx.scale(dpr, dpr)
+
+  const waves = [
+    { color: 'rgba(255,215,0,', amp: 28, freq: 0.008, speed: 0.3, y: h * 0.65, fill: true },
+    { color: 'rgba(255,107,53,', amp: 22, freq: 0.012, speed: -0.5, y: h * 0.62, fill: true },
+    { color: 'rgba(255,51,102,', amp: 18, freq: 0.01, speed: 0.4, y: h * 0.58, fill: true },
+    { color: 'rgba(155,89,182,', amp: 24, freq: 0.007, speed: -0.35, y: h * 0.55, fill: true },
+    { color: 'rgba(108,92,231,', amp: 16, freq: 0.014, speed: 0.6, y: h * 0.5, fill: false },
+  ]
+
+  let offset = 0
+
+  function resize() {
+    w = hero.clientWidth
+    h = hero.clientHeight
+    canvas.width = w * dpr
+    canvas.height = h * dpr
+    canvas.style.width = w + 'px'
+    canvas.style.height = h + 'px'
+    ctx.scale(dpr, dpr)
+    waves.forEach((wv, i) => {
+      wv.y = h * (0.65 - i * 0.04)
+    })
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, w, h)
+
+    waves.forEach((wv) => {
+      ctx.beginPath()
+      for (let x = 0; x <= w; x += 1) {
+        const angle = (x + offset * wv.speed) * wv.freq
+        const y = wv.y + Math.sin(angle + wv.freq * 50) * wv.amp
+        if (x === 0) ctx.moveTo(x, y)
+        else ctx.lineTo(x, y)
+      }
+      ctx.lineTo(w, h)
+      ctx.lineTo(0, h)
+      ctx.closePath()
+      ctx.fillStyle = wv.color + (wv.fill ? '0.12' : '0') + ')'
+      ctx.fill()
+    })
+
+    ctx.save()
+    ctx.globalCompositeOperation = 'overlay'
+    waves.forEach((wv, i) => {
+      if (i === 1) {
+        ctx.beginPath()
+        for (let x = 0; x <= w; x += 1) {
+          const angle = (x + offset * wv.speed) * wv.freq
+          const y = wv.y + Math.sin(angle + wv.freq * 50) * wv.amp
+          if (x === 0) ctx.moveTo(x, y)
+          else ctx.lineTo(x, y)
+        }
+        ctx.lineTo(w, h)
+        ctx.lineTo(0, h)
+        ctx.closePath()
+        ctx.fillStyle = 'rgba(255,215,0,0.06)'
+        ctx.fill()
+      }
+    })
+    ctx.restore()
+
+    offset += 1
+    requestAnimationFrame(draw)
+  }
+
+  window.addEventListener('resize', resize)
+  draw()
+}
 
 document.addEventListener('click', () => closeDropdown())
 document.getElementById('moreDropdown').addEventListener('click', (e) => e.stopPropagation())
