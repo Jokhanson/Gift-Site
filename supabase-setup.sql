@@ -29,7 +29,7 @@ CREATE POLICY "Allow public insert" ON pages
   FOR INSERT WITH CHECK (true);
 
 CREATE POLICY "Allow public update" ON pages
-  FOR UPDATE USING (true);
+  FOR UPDATE USING (true) WITH CHECK (true);
 
 CREATE POLICY "Allow public delete" ON pages
   FOR DELETE USING (true);

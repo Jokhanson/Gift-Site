@@ -573,25 +573,22 @@ document.getElementById('createForm').addEventListener('submit', async (e) => {
     video_url: document.getElementById('formVideoUrl').value
   }
 
-  if (editSlug) {
-    const { error } = await supabase.from('pages').update(pageData).eq('slug', editSlug)
-    if (error) {
-      console.error('Update error:', error)
-      alert('Ошибка при сохранении: ' + error.message)
-      return
+  try {
+    if (editSlug) {
+      const { error } = await sb.from('pages').update(pageData).eq('slug', editSlug)
+      if (error) throw error
+      navigate(`/page/${editSlug}`)
+    } else {
+      const slug = generateSlug()
+      pageData.slug = slug
+      pageData.photo_urls = []
+      const { error } = await insertPage(pageData)
+      if (error) throw error
+      navigate(`/page/${slug}`)
     }
-    navigate(`/page/${editSlug}`)
-  } else {
-    const slug = generateSlug()
-    pageData.slug = slug
-    pageData.photo_urls = []
-    const { error } = await insertPage(pageData)
-    if (error) {
-      console.error('Insert error:', error)
-      alert('Ошибка при создании: ' + error.message)
-      return
-    }
-    navigate(`/page/${slug}`)
+  } catch (err) {
+    console.error(err)
+    alert('Ошибка: ' + (err.message || 'неизвестная ошибка'))
   }
 })
 
