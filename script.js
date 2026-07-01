@@ -242,7 +242,6 @@ function renderVideo(url) {
     frame.innerHTML = ''
     const iframe = document.createElement('iframe')
     iframe.setAttribute('allowfullscreen', '')
-    iframe.setAttribute('loading', 'lazy')
     iframe.title = 'Video'
     iframe.src = embedUrl
     frame.appendChild(iframe)
