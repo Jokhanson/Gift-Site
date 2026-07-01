@@ -10,7 +10,6 @@ const PHOTO_BUCKET = 'gift-photos'
 
 // ==================== STATE ====================
 let currentPage = null
-let qrInstance = null
 let editSlug = null
 
 // ==================== API ====================
@@ -373,14 +372,66 @@ function showQrModal(slug) {
   linkEl.textContent = url
 
   container.innerHTML = ''
-  qrInstance = new QRCode(container, {
-    text: url,
-    width: 200,
-    height: 200,
-    colorDark: '#333333',
-    colorLight: '#ffffff',
-    correctLevel: QRCode.CorrectLevel.H
-  })
+
+  const size = 260
+  const canvas = document.createElement('canvas')
+  canvas.width = size
+  canvas.height = size
+  container.appendChild(canvas)
+  const ctx = canvas.getContext('2d')
+
+  const qr = qrcode(0, 'H')
+  qr.addData(url)
+  qr.make()
+  const count = qr.getModuleCount()
+
+  const pad = Math.floor(size * 0.06)
+  const qrArea = size - pad * 2
+  const cell = qrArea / count
+
+  const grad = ctx.createLinearGradient(0, 0, size, size)
+  grad.addColorStop(0, '#f58529')
+  grad.addColorStop(0.3, '#e1306c')
+  grad.addColorStop(0.7, '#c13584')
+  grad.addColorStop(1, '#833ab4')
+
+  ctx.fillStyle = '#ffffff'
+  ctx.fillRect(0, 0, size, size)
+
+  for (let row = 0; row < count; row++) {
+    for (let col = 0; col < count; col++) {
+      if (qr.isDark(row, col)) {
+        const x = pad + col * cell
+        const y = pad + row * cell
+        const cx = x + cell / 2
+        const cy = y + cell / 2
+        const r = cell * 0.38
+        ctx.fillStyle = grad
+        ctx.beginPath()
+        ctx.arc(cx, cy, r, 0, Math.PI * 2)
+        ctx.fill()
+      }
+    }
+  }
+
+  const sticker = (currentPage && currentPage.sticker) || '🎁'
+  const iconSize = Math.floor(size * 0.24)
+  const iconX = (size - iconSize) / 2
+  const iconY = (size - iconSize) / 2
+
+  ctx.save()
+  ctx.shadowColor = 'rgba(0,0,0,0.1)'
+  ctx.shadowBlur = 8
+  ctx.fillStyle = '#ffffff'
+  ctx.beginPath()
+  ctx.arc(size / 2, size / 2, iconSize / 2 + 6, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.restore()
+
+  ctx.font = `${Math.floor(iconSize * 0.65)}px serif`
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText(sticker, size / 2, size / 2)
 
   modal.classList.remove('hidden')
 }
