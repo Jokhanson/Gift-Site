@@ -45,13 +45,7 @@ async function insertPage(pageData) {
     .insert(pageData)
     .select()
     .single()
-  if (error) throw error
-  return data
-}
-
-async function updatePage(slug, updates) {
-  const { error } = await sb.from('pages').update(updates).eq('slug', slug)
-  if (error) throw error
+  return { data, error }
 }
 
 async function deletePage(slug) {
@@ -579,20 +573,25 @@ document.getElementById('createForm').addEventListener('submit', async (e) => {
     video_url: document.getElementById('formVideoUrl').value
   }
 
-  try {
-    if (editSlug) {
-      await supabase.from('pages').update(pageData).eq('slug', editSlug)
-      navigate(`/page/${editSlug}`)
-    } else {
-      const slug = generateSlug()
-      pageData.slug = slug
-      pageData.photo_urls = []
-      await insertPage(pageData)
-      navigate(`/page/${slug}`)
+  if (editSlug) {
+    const { error } = await supabase.from('pages').update(pageData).eq('slug', editSlug)
+    if (error) {
+      console.error('Update error:', error)
+      alert('Ошибка при сохранении: ' + error.message)
+      return
     }
-  } catch (err) {
-    console.error(err)
-    alert('Ошибка при сохранении открытки. Проверьте подключение к Supabase.')
+    navigate(`/page/${editSlug}`)
+  } else {
+    const slug = generateSlug()
+    pageData.slug = slug
+    pageData.photo_urls = []
+    const { error } = await insertPage(pageData)
+    if (error) {
+      console.error('Insert error:', error)
+      alert('Ошибка при создании: ' + error.message)
+      return
+    }
+    navigate(`/page/${slug}`)
   }
 })
 
