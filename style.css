@@ -275,22 +275,17 @@ body {
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(ellipse 70% 50% at 15% 30%, rgba(255,71,87,0.2) 0%, transparent 55%),
-    radial-gradient(ellipse 60% 60% at 75% 25%, rgba(255,195,18,0.15) 0%, transparent 50%),
-    radial-gradient(ellipse 80% 50% at 45% 75%, rgba(155,89,182,0.12) 0%, transparent 50%),
-    radial-gradient(ellipse 50% 60% at 85% 60%, rgba(255,107,200,0.12) 0%, transparent 50%),
-    radial-gradient(ellipse 60% 50% at 5% 70%, rgba(108,92,231,0.1) 0%, transparent 50%);
-  background-size: 200% 200%;
-  animation: contentWave 12s ease-in-out infinite alternate;
+    radial-gradient(ellipse 70% 60% at 15% 30%, rgba(255,71,87,0.18) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 60% at 75% 25%, rgba(255,195,18,0.12) 0%, transparent 50%),
+    radial-gradient(ellipse 80% 50% at 45% 75%, rgba(155,89,182,0.1) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 60% at 85% 60%, rgba(255,107,200,0.1) 0%, transparent 50%);
+  animation: breathe 6s ease-in-out infinite alternate;
   pointer-events: none;
 }
 
-@keyframes contentWave {
-  0% { background-position: 0% 40%; }
-  25% { background-position: 100% 20%; }
-  50% { background-position: 50% 80%; }
-  75% { background-position: 0% 10%; }
-  100% { background-position: 100% 60%; }
+@keyframes breathe {
+  0% { opacity: 0.7; transform: scale(1); }
+  100% { opacity: 1; transform: scale(1.06); }
 }
 
 @keyframes fadeUp {
